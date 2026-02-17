@@ -1,0 +1,19 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.todos.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
