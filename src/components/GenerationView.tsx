@@ -3,7 +3,7 @@ import { Box, Text } from 'ink';
 import type { Workshop, Module } from '../schema.js';
 import type { ValidationResult } from '../validation.js';
 import { WorkshopSchema, ModuleSchema } from '../schema.js';
-import { getGlobalClient, createSession, streamResponse } from '../client.js';
+import { getGlobalClient, createSession, streamResponse, shutdown } from '../client.js';
 import { getSystemPrompt, buildAnalyzePrompt, buildOutlinePrompt, buildGeneratePrompt } from '../prompts.js';
 import { loadContextFiles } from '../storage.js';
 import { validateWorkshop } from '../validation.js';
@@ -23,7 +23,6 @@ interface ModuleStatus {
   title: string;
   duration: number;
   status: 'pending' | 'generating' | 'complete';
-  currentSection?: number;
   totalSections?: number;
 }
 
@@ -206,6 +205,7 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
 
     return () => {
       cancelled = true;
+      void shutdown();
     };
   }, [params, onComplete, onError]);
 
@@ -293,13 +293,6 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
                         <Text dimColor> ({module.duration}min)</Text>
                       </Text>
                     </Box>
-                    {module.status === 'generating' && module.currentSection && (
-                      <Box marginLeft={2}>
-                        <Text dimColor>
-                          └─ Generating section {module.currentSection} of {module.totalSections}...
-                        </Text>
-                      </Box>
-                    )}
                   </Box>
                 ))}
               </Box>

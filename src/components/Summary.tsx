@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import type { Workshop } from '../schema.js';
 
@@ -7,7 +7,7 @@ export interface SummaryProps {
   savePath: string;
   saveError?: string;
   validationWarnings?: string[];
-  onAction: (action: 'export-md' | 'export-html' | 'validate' | 'exit') => void;
+  onAction: (action: 'export-md' | 'export-html' | 'validate' | 'exit') => void | Promise<void>;
 }
 
 /**
@@ -18,22 +18,26 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
   // Calculate statistics
   const stats = calculateStats(workshop);
 
+  // In-flight guard to prevent re-entrant async actions
+  const actionInFlight = useRef(false);
+
   // Handle keyboard input
   useInput((input) => {
-    switch (input.toLowerCase()) {
-      case 'e':
-        onAction('export-md');
-        break;
-      case 'h':
-        onAction('export-html');
-        break;
-      case 'v':
-        onAction('validate');
-        break;
-      case 'q':
-        onAction('exit');
-        break;
-    }
+    if (actionInFlight.current) return;
+
+    const actionMap: Record<string, 'export-md' | 'export-html' | 'validate' | 'exit'> = {
+      e: 'export-md',
+      h: 'export-html',
+      v: 'validate',
+      q: 'exit',
+    };
+    const action = actionMap[input.toLowerCase()];
+    if (!action) return;
+
+    actionInFlight.current = true;
+    Promise.resolve(onAction(action)).finally(() => {
+      actionInFlight.current = false;
+    });
   });
 
   return (

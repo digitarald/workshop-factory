@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import React, { useState, useCallback } from 'react';
-import { render, Box, Text } from 'ink';
+import React, { useState, useCallback, useEffect } from 'react';
+import { render, Box, Text, useInput } from 'ink';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -13,8 +13,11 @@ import { shutdown } from './client.js';
 import { Wizard } from './components/Wizard.js';
 import { GenerationView } from './components/GenerationView.js';
 import { Summary } from './components/Summary.js';
+import { WorkshopPicker } from './components/WorkshopPicker.js';
 import type { Workshop } from './schema.js';
 import type { ValidationResult } from './validation.js';
+import { discoverExistingWorkshops, getExportPath, getNewWorkshopConfigPath } from './workshops.js';
+import type { ExistingWorkshop } from './workshops.js';
 
 /**
  * Workshop Factory CLI
@@ -88,10 +91,14 @@ function parseArgs(argv: string[]): ParsedArgs {
   return { command, positional, context, format };
 }
 
-type AppScreen = 'wizard' | 'generating' | 'summary';
+type AppScreen = 'picker' | 'wizard' | 'generating' | 'summary';
 
 function App({ contextFiles }: { contextFiles?: string[] }) {
-  const [screen, setScreen] = useState<AppScreen>('wizard');
+  const [screen, setScreen] = useState<AppScreen>('picker');
+  const [existingWorkshops, setExistingWorkshops] = useState<ExistingWorkshop[]>([]);
+  const [isLoadingWorkshops, setIsLoadingWorkshops] = useState(true);
+  const [isOpeningWorkshop, setIsOpeningWorkshop] = useState(false);
+  const [pickerError, setPickerError] = useState<string | undefined>();
   const [wizardParams, setWizardParams] = useState<{
     topic: string;
     audience: { level: 'beginner' | 'intermediate' | 'advanced'; stack?: string };
@@ -105,10 +112,43 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWorkshops() {
+      setIsLoadingWorkshops(true);
+      setPickerError(undefined);
+
+      try {
+        const workshops = await discoverExistingWorkshops();
+        if (cancelled) {
+          return;
+        }
+
+        setExistingWorkshops(workshops);
+      } catch (e) {
+        if (cancelled) {
+          return;
+        }
+
+        setPickerError(`Failed to discover workshops: ${e instanceof Error ? e.message : String(e)}`);
+      } finally {
+        if (!cancelled) {
+          setIsLoadingWorkshops(false);
+        }
+      }
+    }
+
+    void loadWorkshops();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleGenerationComplete = useCallback(async (w: Workshop, validation: ValidationResult) => {
     if (!wizardParams) return;
-    const slug = wizardParams.topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'workshop';
-    const path = `${slug}-workshop.yaml`;
+    const path = getNewWorkshopConfigPath(wizardParams.topic);
     try {
       await saveWorkshop(w, path);
     } catch (e) {
@@ -125,11 +165,59 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
     setError(err.message);
   }, []);
 
+  // Handle error state: allow retry or exit
+  useInput((input, key) => {
+    if (input === 'r' || input === 'R') {
+      setError(null);
+      setScreen('wizard');
+    } else if (input === 'q' || input === 'Q' || key.escape) {
+      void shutdown().then(() => process.exit(1));
+    }
+  }, { isActive: !!error });
+
   if (error) {
     return (
       <Box flexDirection="column" padding={1}>
         <Text color="red" bold>Error: {error}</Text>
+        <Box marginTop={1} flexDirection="column">
+          <Text>[r] Back to wizard</Text>
+          <Text>[q] Exit</Text>
+        </Box>
       </Box>
+    );
+  }
+
+  if (screen === 'picker') {
+    return (
+      <WorkshopPicker
+        workshops={existingWorkshops}
+        isLoading={isLoadingWorkshops}
+        isOpening={isOpeningWorkshop}
+        error={pickerError}
+        onCreateNew={() => {
+          setPickerError(undefined);
+          setScreen('wizard');
+        }}
+        onSelect={(selectedWorkshop) => {
+          setIsOpeningWorkshop(true);
+          setPickerError(undefined);
+
+          void (async () => {
+            try {
+              const loadedWorkshop = await loadWorkshop(selectedWorkshop.path);
+              setWorkshop(loadedWorkshop);
+              setSavePath(selectedWorkshop.path);
+              setSaveError(undefined);
+              setValidationWarnings([]);
+              setScreen('summary');
+            } catch (e) {
+              setPickerError(`Failed to open ${selectedWorkshop.path}: ${e instanceof Error ? e.message : String(e)}`);
+            } finally {
+              setIsOpeningWorkshop(false);
+            }
+          })();
+        }}
+      />
     );
   }
 
@@ -165,11 +253,11 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
         onAction={async (action) => {
           try {
             if (action === 'export-md') {
-              const outPath = savePath.replace(/\.ya?ml$/i, '.md');
+              const outPath = getExportPath(savePath, 'md');
               await exportToMarkdownFile(workshop, outPath);
               console.log(`✓ Exported to ${outPath}`);
             } else if (action === 'export-html') {
-              const outPath = savePath.replace(/\.ya?ml$/i, '.html');
+              const outPath = getExportPath(savePath, 'html');
               await exportToHtmlFile(workshop, outPath);
               console.log(`✓ Exported to ${outPath}`);
             } else if (action === 'validate') {
@@ -216,28 +304,32 @@ async function handleRegen(
   sections?: number[],
   contextFiles?: string[]
 ): Promise<void> {
-  // Call the regeneration logic
-  const workshop = await regenerateWorkshop({
-    workshopPath: file,
-    sectionIndices: sections,
-    contextFiles: contextFiles,
-  });
-  
-  // Print validation results after regeneration
-  console.log('\n--- Validation Summary ---');
-  const result = validateWorkshop(workshop);
-  
-  for (const check of result.checks) {
-    const icon = check.passed ? '✓' : '✗';
-    console.log(`${icon} ${check.message}`);
-  }
-  
-  console.log('');
-  if (result.valid) {
-    console.log('✓ Regeneration complete. Workshop passed all validation checks.');
-  } else {
-    const failedCount = result.checks.filter(c => !c.passed).length;
-    console.log(`⚠ Regeneration complete, but workshop has ${failedCount} validation issue(s).`);
+  try {
+    // Call the regeneration logic
+    const workshop = await regenerateWorkshop({
+      workshopPath: file,
+      sectionIndices: sections,
+      contextFiles: contextFiles,
+    });
+    
+    // Print validation results after regeneration
+    console.log('\n--- Validation Summary ---');
+    const result = validateWorkshop(workshop);
+    
+    for (const check of result.checks) {
+      const icon = check.passed ? '✓' : '✗';
+      console.log(`${icon} ${check.message}`);
+    }
+    
+    console.log('');
+    if (result.valid) {
+      console.log('✓ Regeneration complete. Workshop passed all validation checks.');
+    } else {
+      const failedCount = result.checks.filter(c => !c.passed).length;
+      console.log(`⚠ Regeneration complete, but workshop has ${failedCount} validation issue(s).`);
+    }
+  } finally {
+    await shutdown();
   }
 }
 
@@ -251,9 +343,7 @@ async function handleExport(
   console.log(`Loading workshop from ${file}...`);
   const workshop = await loadWorkshop(file);
   
-  // Generate output filename
-  const baseName = file.replace(/\.ya?ml$/i, '');
-  const outputPath = `${baseName}.${format === 'md' ? 'md' : 'html'}`;
+  const outputPath = getExportPath(file, format);
   
   console.log(`Exporting to ${format.toUpperCase()}...`);
   
@@ -320,7 +410,7 @@ Workshop Factory CLI
 
 Usage:
   workshop new [--context <files...>]
-    Create a new workshop through an interactive wizard.
+    Show existing workshops or create a new one through an interactive wizard.
     Optional: --context <files...> to inject context documents
 
   workshop regen <file> [sections] [--context <files...>]
@@ -347,9 +437,9 @@ Usage:
 Examples:
   workshop new
   workshop new --context docs/feature-brief.md docs/api-spec.md
-  workshop regen workshop.yaml 1,3 --context updated-docs.md
-  workshop export workshop.yaml --format md
-  workshop validate workshop.yaml
+  workshop regen docker-basics/workshop.yaml 1,3 --context updated-docs.md
+  workshop export docker-basics/workshop.yaml --format md
+  workshop validate docker-basics/workshop.yaml
 `);
 }
 
@@ -451,7 +541,9 @@ process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled promise rejection:', reason);
-  process.exit(1);
+  shutdown().finally(() => {
+    process.exit(1);
+  });
 });
 
 // Run the CLI with comprehensive error handling

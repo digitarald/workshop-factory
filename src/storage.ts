@@ -1,5 +1,6 @@
-import { readFile, writeFile, access } from 'node:fs/promises';
+import { readFile, writeFile, access, mkdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
+import { dirname } from 'node:path';
 import { dump, load } from 'js-yaml';
 import { Workshop, WorkshopSchema } from './schema.js';
 
@@ -37,6 +38,7 @@ export async function saveWorkshop(
   });
 
   try {
+    await mkdir(dirname(filePath), { recursive: true });
     await writeFile(filePath, yamlContent, 'utf-8');
   } catch (error) {
     throw new Error(`Failed to write file: ${filePath}. ${error instanceof Error ? error.message : String(error)}`, { cause: error });
