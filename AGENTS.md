@@ -48,7 +48,7 @@ analyze (topic → subtopics, scope)
       → validate (pedagogical rule checks)
 ```
 
-Pedagogy rules live in `prompts/SKILL.md` and are injected as system prompt context. The file is resolved relative to the package root via `import.meta.url`, not `process.cwd()`.
+Pedagogy rules live in `prompts/WORKSHOP-PEDAGOGY.md` and are injected as system prompt context. The file is resolved relative to the package root via `import.meta.url`, not `process.cwd()`.
 
 ### Repo Generation Pipeline
 
@@ -81,7 +81,7 @@ The `writeFile` tool (`src/tools/writeFile.ts`) is special — it's instantiated
 
 esbuild bundles `src/index.tsx` into a single `dist/workshop.js` file. External deps (`ink`, `react`, `@github/copilot-sdk`) are not bundled — they resolve from `node_modules` at runtime. TypeScript compilation (`tsc --noEmit`) is used only for type checking, not code generation.
 
-Prompt templates in `prompts/` (SKILL.md, WORKSHOP-DESIGN.md, WORKSHOP-SCAFFOLD.md, WORKSHOP-README.md) are **not bundled** — they ship as-is via `"files": ["dist", "prompts"]` in package.json and are read at runtime.
+Prompt templates in `prompts/` (WORKSHOP-PEDAGOGY.md, WORKSHOP-DESIGN.md, WORKSHOP-SCAFFOLD.md, WORKSHOP-README.md) are **not bundled** — they ship as-is via `"files": ["dist", "prompts"]` in package.json and are read at runtime.
 
 ## Key Conventions
 

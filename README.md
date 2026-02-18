@@ -175,7 +175,7 @@ modules:
 
 ## Pedagogy Rules
 
-Workshop Factory enforces evidence-based learning principles (see `prompts/SKILL.md` for full details):
+Workshop Factory enforces evidence-based learning principles (see `prompts/WORKSHOP-PEDAGOGY.md` for full details):
 
 - **Bloom's Taxonomy** — Learning objectives use cognitive action verbs matched to audience level:
   - Beginner: remember, understand, apply
@@ -220,7 +220,7 @@ Key source files:
   - `repo-generate.ts` — Template repo generation orchestrator (slides, code scaffold, README)
 - **`src/tools/writeFile.ts`** — SDK tool for file output during repo generation
 
-**Pedagogy rules**: `prompts/SKILL.md` encodes learning science principles for the Copilot SDK to follow during generation.
+**Pedagogy rules**: `prompts/WORKSHOP-PEDAGOGY.md` encodes learning science principles for the Copilot SDK to follow during generation.
 
 ---
 

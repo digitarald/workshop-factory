@@ -1,0 +1,14 @@
+{
+  "name": "landing-page-workshop",
+  "version": "1.0.0",
+  "description": "Build a Landing Page with VS Code Agent Mode — workshop starter project",
+  "private": true,
+  "scripts": {
+    "start": "npx serve src --listen 3000 --no-clipboard",
+    "serve:solution1": "npx serve solutions/exercise-1 --listen 3000 --no-clipboard",
+    "serve:solution2": "npx serve solutions/exercise-2 --listen 3000 --no-clipboard"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

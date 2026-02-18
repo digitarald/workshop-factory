@@ -257,7 +257,7 @@ Before returning generated content, verify:
 - [ ] No lecture section exceeds 15 minutes
 - [ ] No section is shorter than 5 minutes
 - [ ] Every exercise has `starter_code` and `solution` fields
-- [ ] Every checkpoint has `questions`, `expected_answers`, and `explanation` arrays
+- [ ] Every checkpoint has `questions`, `expected_answers`, and `explanations` arrays
 
 ---
 

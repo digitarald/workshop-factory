@@ -15,7 +15,7 @@ import type { Workshop } from './schema.js';
 
 /**
  * Get the system prompt that instructs the model on workshop generation.
- * Reads SKILL.md from the project root and includes:
+ * Reads WORKSHOP-PEDAGOGY.md from the project root and includes:
  * - Pedagogy rules (Bloom's taxonomy, practice ratios, scaffolding)
  * - Available tools (save_workshop, validate_structure)
  * - Output format instructions (structured JSON matching Workshop schema)
@@ -26,13 +26,13 @@ export async function getSystemPrompt(): Promise<string> {
   let skillContent: string;
   
   try {
-    // Read SKILL.md relative to this module (works when installed as CLI too)
+    // Read WORKSHOP-PEDAGOGY.md relative to this module (works when installed as CLI too)
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const skillPath = join(__dirname, '..', 'prompts', 'SKILL.md');
+    const skillPath = join(__dirname, '..', 'prompts', 'WORKSHOP-PEDAGOGY.md');
     skillContent = await readFile(skillPath, 'utf-8');
   } catch {
-    // Fallback if SKILL.md doesn't exist yet
+    // Fallback if WORKSHOP-PEDAGOGY.md doesn't exist yet
     skillContent = `# Workshop Pedagogy Rules
 
 ## Core Principles
@@ -217,7 +217,12 @@ Create a module and section plan that:
 - Meets the practice-first ratio (≥60% exercises/discussion, ≤25% lecture, ≥15% checkpoints)
 - Spaces checkpoints every ~20-25 minutes
 - Tags learning objectives with Bloom's levels appropriate for ${audience.level} level
+- Starts every learning objective with an action verb from the ${audience.level}-level tier in the pedagogy rules
 - Total duration sums to ${duration} minutes (±5min tolerance)
+- Every section is at least 5 minutes (no section shorter than 5min)
+- No single lecture section exceeds 15 minutes
+- Section durations within each module sum to that module's duration (±2min tolerance)
+- Workshop includes at least one exercise section
 
 For each module, provide:
 - Title

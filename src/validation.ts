@@ -30,12 +30,12 @@ export interface ValidationResult {
  * Bloom's taxonomy action verbs for each cognitive level
  */
 const BLOOMS_VERBS: Record<BloomsLevel, string[]> = {
-  remember: ['define', 'list', 'recall', 'recognize', 'identify', 'name', 'state', 'describe'],
-  understand: ['explain', 'summarize', 'interpret', 'classify', 'compare', 'contrast', 'demonstrate', 'discuss'],
-  apply: ['apply', 'execute', 'implement', 'solve', 'use', 'demonstrate', 'construct', 'modify'],
-  analyze: ['analyze', 'differentiate', 'organize', 'attribute', 'distinguish', 'examine', 'investigate', 'test'],
-  evaluate: ['evaluate', 'critique', 'judge', 'justify', 'assess', 'defend', 'argue', 'support'],
-  create: ['create', 'design', 'develop', 'formulate', 'construct', 'plan', 'compose', 'devise'],
+  remember: ['define', 'list', 'identify', 'recall', 'name', 'recognize', 'state', 'label'],
+  understand: ['explain', 'describe', 'summarize', 'interpret', 'classify', 'compare', 'discuss', 'paraphrase'],
+  apply: ['implement', 'use', 'execute', 'demonstrate', 'solve', 'apply', 'build', 'operate'],
+  analyze: ['differentiate', 'examine', 'compare', 'contrast', 'debug', 'test', 'investigate', 'categorize'],
+  evaluate: ['assess', 'critique', 'justify', 'defend', 'judge', 'recommend', 'prioritize', 'validate'],
+  create: ['design', 'build', 'construct', 'develop', 'compose', 'formulate', 'plan', 'architect'],
 };
 
 /**
@@ -43,8 +43,8 @@ const BLOOMS_VERBS: Record<BloomsLevel, string[]> = {
  */
 const LEVEL_BLOOMS_MAP: Record<'beginner' | 'intermediate' | 'advanced', BloomsLevel[]> = {
   beginner: ['remember', 'understand', 'apply'],
-  intermediate: ['understand', 'apply', 'analyze'],
-  advanced: ['apply', 'analyze', 'evaluate', 'create'],
+  intermediate: ['apply', 'analyze'],
+  advanced: ['analyze', 'evaluate', 'create'],
 };
 
 /**
