@@ -287,88 +287,63 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
   };
 
   return (
-    <Box flexDirection="column" padding={1}>
+    <Box flexDirection="column" borderStyle="single" borderColor="cyan" paddingX={2} paddingY={1}>
       {/* Header */}
-      <Box borderStyle="single" borderColor="cyan" flexDirection="column" padding={1}>
-        <Box flexDirection="column">
-          <Text bold color="cyan">
-            ┌─ Generating Workshop ──────────────────────────┐
-          </Text>
-          <Box paddingLeft={2} paddingY={1} flexDirection="column">
-            <Box marginBottom={1}>
-              <Text>
-                Phase: <Text color="yellow">{getPhaseText()}</Text>
-                {getStep() && (
-                  <Text dimColor> [Step {getStep()}]</Text>
-                )}
+      <Text bold color="cyan">Generating Workshop</Text>
+
+      <Box marginTop={1} flexDirection="column">
+        <Text>
+          Phase: <Text color="yellow">{getPhaseText()}</Text>
+          {getStep() && (
+            <Text dimColor> [Step {getStep()}]</Text>
+          )}
+        </Text>
+      </Box>
+
+      {/* Module list */}
+      {modules.length > 0 && (
+        <Box flexDirection="column" marginTop={1}>
+          <Text bold>Modules:</Text>
+          {modules.map((module, idx) => (
+            <Box key={idx} marginLeft={1}>
+              <Text color={module.status === 'complete' ? 'green' : module.status === 'generating' ? 'yellow' : 'gray'}>
+                {getStatusIcon(module.status)} Module {idx + 1}: {module.title}
+                <Text dimColor> ({module.duration}min)</Text>
               </Text>
             </Box>
+          ))}
+        </Box>
+      )}
 
-            {/* Module list */}
-            {modules.length > 0 && (
-              <Box flexDirection="column" marginTop={1}>
-                <Text bold>Modules:</Text>
-                {modules.map((module, idx) => (
-                  <Box key={idx} flexDirection="column" marginLeft={1}>
-                    <Box>
-                      <Text color={module.status === 'complete' ? 'green' : module.status === 'generating' ? 'yellow' : 'gray'}>
-                        {getStatusIcon(module.status)} Module {idx + 1}: {module.title}
-                        <Text dimColor> ({module.duration}min)</Text>
-                      </Text>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-            )}
+      {/* Current section streaming display */}
+      {phase === 'generating' && streamContent && (
+        <Box flexDirection="column" marginTop={1}>
+          <Text dimColor>streaming: </Text>
+          <Text dimColor>{streamContent}</Text>
+        </Box>
+      )}
 
-            {/* Current section streaming display */}
-            {phase === 'generating' && streamContent && (
-              <Box
-                flexDirection="column"
-                borderStyle="single"
-                borderColor="gray"
-                marginTop={1}
-                padding={1}
-              >
-                <Text bold dimColor>
-                  ─ Current Section ─────────────────────────
-                </Text>
-                <Box marginTop={1}>
-                  <Text>{streamContent}</Text>
-                </Box>
-                <Box marginTop={1}>
-                  <Text dimColor>████████████░░░░░░░░ streaming...</Text>
-                </Box>
-              </Box>
-            )}
+      {/* Validation display */}
+      {phase === 'validating' && (
+        <Box marginTop={1}>
+          <Text color="blue">{streamContent}</Text>
+        </Box>
+      )}
 
-            {/* Validation display */}
-            {phase === 'validating' && (
-              <Box marginTop={1}>
-                <Text color="blue">{streamContent}</Text>
-              </Box>
-            )}
-
-            {/* Error display */}
-            {phase === 'error' && error && (
-              <Box marginTop={1} flexDirection="column">
-                <Text color="red" bold>
-                  Error: {error.message}
-                </Text>
-              </Box>
-            )}
-
-            {/* Elapsed time */}
-            <Box marginTop={1}>
-              <Text dimColor>
-                Elapsed: <Text color="cyan">{formatElapsed(elapsed)}</Text>
-              </Text>
-            </Box>
-          </Box>
-          <Text bold color="cyan">
-            └──────────────────────────────────────────────────┘
+      {/* Error display */}
+      {phase === 'error' && error && (
+        <Box marginTop={1} flexDirection="column">
+          <Text color="red" bold>
+            Error: {error.message}
           </Text>
         </Box>
+      )}
+
+      {/* Elapsed time */}
+      <Box marginTop={1}>
+        <Text dimColor>
+          Elapsed: <Text color="cyan">{formatElapsed(elapsed)}</Text>
+        </Text>
       </Box>
     </Box>
   );

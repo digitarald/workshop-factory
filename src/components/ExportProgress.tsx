@@ -29,6 +29,8 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
   const [currentPhase, setCurrentPhase] = useState<RepoPhase | null>(null);
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [phaseTotal, setPhaseTotal] = useState(0);
+  const [streamingChars, setStreamingChars] = useState(0);
+  const [streamingPreview, setStreamingPreview] = useState('');
   const [files, setFiles] = useState<WrittenFile[]>([]);
   const [done, setDone] = useState(false);
   const started = useRef(false);
@@ -45,6 +47,12 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
           setCurrentPhase(event.phase);
           setPhaseIndex(event.index);
           setPhaseTotal(event.total);
+          setStreamingChars(0);
+          setStreamingPreview('');
+          break;
+        case 'text-delta':
+          setStreamingChars(event.chars);
+          if (event.preview) setStreamingPreview(event.preview);
           break;
         case 'file-written':
           setFiles((prev) => [...prev, { path: event.path, bytes: event.bytes }]);
@@ -85,10 +93,20 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
 
         {/* Phase indicator */}
         {currentPhase && !done && (
-          <Box marginBottom={1}>
-            <Text>
-              {PHASE_LABELS[currentPhase]} ({phaseIndex + 1}/{phaseTotal})...
-            </Text>
+          <Box flexDirection="column" marginBottom={1}>
+            <Box>
+              <Text>
+                {PHASE_LABELS[currentPhase]} ({phaseIndex + 1}/{phaseTotal})...
+              </Text>
+              {streamingChars > 0 && (
+                <Text dimColor> {formatChars(streamingChars)} received</Text>
+              )}
+            </Box>
+            {streamingPreview && (
+              <Box>
+                <Text dimColor>  &ldquo;{streamingPreview.slice(-70).trimStart()}&hellip;&rdquo;</Text>
+              </Box>
+            )}
           </Box>
         )}
 
@@ -124,4 +142,9 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;
   return `${kb.toFixed(1)} KB`;
+}
+
+function formatChars(chars: number): string {
+  if (chars < 1000) return `${chars} chars`;
+  return `${(chars / 1000).toFixed(1)}k chars`;
 }

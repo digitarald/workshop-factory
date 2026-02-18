@@ -20,7 +20,7 @@ export function slugifyTopic(topic: string): string {
 
 export function getNewWorkshopConfigPath(topic: string): string {
   const slug = slugifyTopic(topic);
-  return `${slug}/${WORKSHOP_CONFIG_BASENAME}`;
+  return `workshop-${slug}/${WORKSHOP_CONFIG_BASENAME}`;
 }
 
 export function getExportPath(workshopPath: string): string {

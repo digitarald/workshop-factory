@@ -21,6 +21,7 @@ import type { Workshop } from '../schema.js';
 /** Progress events emitted during generation. */
 export type GenerateRepoEvent =
   | { type: 'phase-start'; phase: RepoPhase; index: number; total: number }
+  | { type: 'text-delta'; phase: RepoPhase; chars: number; preview: string }
   | { type: 'file-written'; phase: RepoPhase; path: string; bytes: number }
   | { type: 'phase-complete'; phase: RepoPhase }
   | { type: 'static-written'; path: string }
@@ -71,10 +72,21 @@ export async function generateRepo(
       tools: [writeFileTool],
     });
 
-    // Drive the session to completion — the model calls write_file via tool invocations.
-    // We consume the stream but don't need the text output.
-    for await (const _chunk of streamResponse(session, user)) {
-      // Stream is consumed so tool calls are processed.
+    // Drive the session to completion — emit text-delta events so the UI can show streaming progress.
+    let charsStreamed = 0;
+    let lastEmitChars = 0;
+    for await (const chunk of streamResponse(session, user)) {
+      if (chunk.type === 'delta') {
+        charsStreamed += chunk.content.length;
+        if (charsStreamed - lastEmitChars >= 100) {
+          lastEmitChars = charsStreamed;
+          const preview = chunk.accumulated.slice(-80).replace(/\n/g, ' ').trim();
+          onEvent?.({ type: 'text-delta', phase, chars: charsStreamed, preview });
+        }
+      }
+    }
+    if (charsStreamed > lastEmitChars) {
+      onEvent?.({ type: 'text-delta', phase, chars: charsStreamed, preview: '' });
     }
 
     if (filesWritten === 0) {

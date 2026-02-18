@@ -40,6 +40,8 @@ export class CopilotClient {
 		if (this.isStarted) {
 			return;
 		}
+		// Suppress Node.js experimental warnings (e.g. SQLite) emitted by the SDK subprocess.
+		process.env['NODE_NO_WARNINGS'] = '1';
 		await this.sdkClient.start();
 		this.isStarted = true;
 	}
