@@ -41,7 +41,7 @@ You are a workshop design expert specializing in evidence-based pedagogy.
 
 ### Bloom's Taxonomy
 - Tag all learning objectives with cognitive levels: remember, understand, apply, analyze, evaluate, create
-- Match cognitive level to audience difficulty:
+- Match cognitive level to audience level:
   - Beginner: focus on remember, understand, apply
   - Intermediate: focus on apply, analyze
   - Advanced: focus on analyze, evaluate, create
@@ -92,7 +92,6 @@ interface Workshop {
     size?: number;
   };
   duration: number; // total minutes
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
   prerequisites: string[];
   context_sources: string[]; // paths to provided context files
   modules: Module[];
@@ -129,7 +128,6 @@ export interface WorkshopParams {
     size?: number;
   };
   duration: number;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
   context?: string[]; // file paths to context documents
 }
 
@@ -146,14 +144,13 @@ export function buildAnalyzePrompt(
   params: WorkshopParams,
   contextContent?: string[]
 ): string {
-  const { topic, audience, duration, difficulty, context } = params;
+  const { topic, audience, duration, context } = params;
 
   let prompt = `Analyze this topic for a workshop:
 
 **Topic**: ${topic}
 **Audience**: ${audience.level} level${audience.stack ? ` (${audience.stack} stack)` : ''}${audience.size ? `, group size: ${audience.size}` : ''}
 **Duration**: ${duration} minutes
-**Difficulty**: ${difficulty}
 `;
 
   if (context && context.length > 0 && contextContent && contextContent.length > 0) {
@@ -171,7 +168,7 @@ Please analyze this workshop request and provide:
 
 1. **Subtopics breakdown** — key areas to cover within the ${duration}-minute timeframe
 2. **Prerequisites assessment** — what knowledge/skills should participants have beforehand
-3. **Scope recommendations** — any adjustments needed to fit the duration and difficulty level
+3. **Scope recommendations** — any adjustments needed to fit the duration and audience level
 4. **Notes** — any important considerations for this audience/context
 
 **Output as JSON**:
@@ -200,7 +197,7 @@ export function buildOutlinePrompt(
   analysis: string,
   params: WorkshopParams
 ): string {
-  const { topic, audience, duration, difficulty } = params;
+  const { topic, audience, duration } = params;
 
   return `Based on the analysis below, create a structured outline for the workshop.
 
@@ -213,14 +210,13 @@ ${analysis}
 - Topic: ${topic}
 - Audience: ${audience.level} level${audience.stack ? ` (${audience.stack})` : ''}
 - Duration: ${duration} minutes
-- Difficulty: ${difficulty}
 
 Create a module and section plan that:
 - Breaks the topic into logical modules
 - Assigns durations to each module and section
 - Meets the practice-first ratio (≥60% exercises/discussion, ≤25% lecture, ≥15% checkpoints)
 - Spaces checkpoints every ~20-25 minutes
-- Tags learning objectives with Bloom's levels appropriate for ${difficulty} difficulty
+- Tags learning objectives with Bloom's levels appropriate for ${audience.level} level
 - Total duration sums to ${duration} minutes (±5min tolerance)
 
 For each module, provide:
@@ -242,7 +238,6 @@ For each section, provide:
   "topic": "${topic}",
   "audience": ${JSON.stringify(params.audience)},
   "duration": ${duration},
-  "difficulty": "${difficulty}",
   "prerequisites": [],
   "context_sources": ${JSON.stringify(params.context || [])},
   "modules": [
@@ -404,7 +399,6 @@ ${newContext ? '5. Ground regenerated sections in the new context provided' : ''
   "topic": "...",
   "audience": {...},
   "duration": ...,
-  "difficulty": "...",
   "prerequisites": [...],
   "context_sources": [...],
   "modules": [...]

@@ -6,7 +6,7 @@
 
 ## 1. Bloom's Taxonomy: Action Verb Alignment
 
-**Rule**: All learning objectives MUST use action verbs that match or exceed the difficulty level's cognitive requirements.
+**Rule**: All learning objectives MUST use action verbs that match or exceed the audience level's cognitive requirements.
 
 ### Action Verbs by Cognitive Level
 
@@ -17,9 +17,9 @@
 - **Evaluate**: assess, critique, justify, defend, judge, recommend, prioritize, validate
 - **Create**: design, build, construct, develop, compose, formulate, plan, architect
 
-### Difficulty Level Requirements
+### Audience Level Requirements
 
-| Difficulty | Minimum Cognitive Levels | Example Objective |
+| Audience Level | Minimum Cognitive Levels | Example Objective |
 |-----------|-------------------------|-------------------|
 | **Beginner** | Remember, Understand, Apply | "Implement a basic Docker container", "Explain container lifecycle" |
 | **Intermediate** | Apply, Analyze | "Debug multi-container networking issues", "Compare orchestration strategies" |
@@ -269,6 +269,6 @@ When trade-offs are necessary, prioritize in this order:
 2. **Stack adaptation** — code must be runnable by the target audience
 3. **Checkpoint spacing** — knowledge checks prevent compounding confusion
 4. **Scaffolding** — progression from guided to independent prevents frustration
-5. **Bloom's alignment** — ensures objectives match difficulty level
+5. **Bloom's alignment** — ensures objectives match audience level
 
 **Never compromise on**: Practice ratio, stack adaptation, or duration consistency.

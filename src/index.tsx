@@ -88,7 +88,6 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
     topic: string;
     audience: { level: 'beginner' | 'intermediate' | 'advanced'; stack?: string };
     duration: number;
-    difficulty: 'beginner' | 'intermediate' | 'advanced';
     contextFiles: string[];
   } | null>(null);
   const [workshop, setWorkshop] = useState<Workshop | null>(null);

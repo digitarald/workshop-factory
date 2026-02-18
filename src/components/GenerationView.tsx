@@ -34,7 +34,6 @@ export interface GenerationViewProps {
     topic: string;
     audience: { level: 'beginner' | 'intermediate' | 'advanced'; stack?: string };
     duration: number;
-    difficulty: 'beginner' | 'intermediate' | 'advanced';
     contextFiles: string[];
   };
   onComplete: (workshop: Workshop, validation: ValidationResult) => void;
@@ -77,7 +76,6 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
           topic: params.topic,
           audience: params.audience,
           duration: params.duration,
-          difficulty: params.difficulty,
           context: params.contextFiles.length > 0 ? params.contextFiles : undefined,
         };
 
@@ -198,7 +196,6 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
           topic: params.topic,
           audience: workshopParams.audience,
           duration: params.duration,
-          difficulty: workshopParams.difficulty,
           prerequisites: outlineParsed.prerequisites ?? [],
           context_sources: params.contextFiles,
           modules: generatedModules,

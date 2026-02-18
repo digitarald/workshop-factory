@@ -16,7 +16,7 @@ You receive a Workshop JSON object containing internal pedagogical metadata. You
 - **DROP context sources** — `context_sources` is internal generation metadata. Never display it.
 - **REFRAME durations** — show soft pacing hints ("~10 min") at the module level only. Don't show per-section timings.
 - **REFRAME learning objectives** — show as "What you'll learn" in plain, action-oriented language. Never mention Bloom's.
-- **DROP internal metadata** — `difficulty`, `audience.level`, `audience.size` are not for attendees.
+- **DROP internal metadata** — `audience.level`, `audience.size` are not for attendees.
 
 ### Content Presentation by Section Type
 

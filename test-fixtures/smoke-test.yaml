@@ -4,7 +4,6 @@ audience:
   level: beginner
   stack: TypeScript/Node.js
 duration: 60
-difficulty: beginner
 prerequisites:
   - Basic JavaScript knowledge
 context_sources: []

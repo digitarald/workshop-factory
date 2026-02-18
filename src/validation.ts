@@ -27,7 +27,7 @@ export interface ValidationResult {
 }
 
 /**
- * Bloom's taxonomy action verbs for each cognitive level and difficulty
+ * Bloom's taxonomy action verbs for each cognitive level
  */
 const BLOOMS_VERBS: Record<BloomsLevel, string[]> = {
   remember: ['define', 'list', 'recall', 'recognize', 'identify', 'name', 'state', 'describe'],
@@ -39,9 +39,9 @@ const BLOOMS_VERBS: Record<BloomsLevel, string[]> = {
 };
 
 /**
- * Expected Bloom's levels by workshop difficulty
+ * Expected Bloom's levels by audience level
  */
-const DIFFICULTY_BLOOMS_MAP = {
+const LEVEL_BLOOMS_MAP: Record<'beginner' | 'intermediate' | 'advanced', BloomsLevel[]> = {
   beginner: ['remember', 'understand', 'apply'],
   intermediate: ['understand', 'apply', 'analyze'],
   advanced: ['apply', 'analyze', 'evaluate', 'create'],
@@ -233,18 +233,18 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     });
   }
 
-  // 10. Bloom's alignment: learning objectives use appropriate verbs for the workshop difficulty
-  const expectedLevels = DIFFICULTY_BLOOMS_MAP[workshop.difficulty];
+  // 10. Bloom's alignment: learning objectives use appropriate verbs for the audience level
+  const expectedLevels = LEVEL_BLOOMS_MAP[workshop.audience.level];
   let bloomsIssues = 0;
   for (const [moduleIdx, module] of workshop.modules.entries()) {
     for (const [objIdx, objective] of module.learning_objectives.entries()) {
-      // Check if the Bloom's level is appropriate for difficulty
+      // Check if the Bloom's level is appropriate for audience level
       if (!expectedLevels.includes(objective.blooms_level)) {
         bloomsIssues++;
         checks.push({
           rule: 'blooms_alignment',
           passed: false,
-          message: `Module ${moduleIdx + 1}, Objective ${objIdx + 1}: "${objective.text}" uses "${objective.blooms_level}" level, but ${workshop.difficulty} workshops should focus on: ${expectedLevels.join(', ')}`,
+          message: `Module ${moduleIdx + 1}, Objective ${objIdx + 1}: "${objective.text}" uses "${objective.blooms_level}" level, but ${workshop.audience.level}-level workshops should focus on: ${expectedLevels.join(', ')}`,
         });
       }
 
@@ -266,7 +266,7 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'blooms_alignment',
       passed: true,
-      message: `All ${totalObjectives} learning objectives use appropriate Bloom's levels and verbs for ${workshop.difficulty} difficulty`,
+      message: `All ${totalObjectives} learning objectives use appropriate Bloom's levels and verbs for ${workshop.audience.level}-level audience`,
     });
   }
 

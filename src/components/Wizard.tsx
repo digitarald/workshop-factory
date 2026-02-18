@@ -7,13 +7,11 @@ interface WizardProps {
     topic: string;
     audience: { level: 'beginner' | 'intermediate' | 'advanced'; stack?: string };
     duration: number;
-    difficulty: 'beginner' | 'intermediate' | 'advanced';
     contextFiles: string[];
   }) => void;
 }
 
 type AudienceLevel = 'beginner' | 'intermediate' | 'advanced';
-type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 
 interface DurationOption {
   label: string;
@@ -21,7 +19,6 @@ interface DurationOption {
 }
 
 const AUDIENCE_LEVELS: AudienceLevel[] = ['beginner', 'intermediate', 'advanced'];
-const DIFFICULTY_LEVELS: Difficulty[] = ['beginner', 'intermediate', 'advanced'];
 const DURATION_OPTIONS: DurationOption[] = [
   { label: '30min', minutes: 30 },
   { label: '60min', minutes: 60 },
@@ -34,7 +31,7 @@ const DURATION_OPTIONS: DurationOption[] = [
 export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
   const { exit } = useApp();
   
-  // State machine: 0=topic, 1=audience_level, 2=audience_stack, 3=duration, 4=difficulty, 5=confirm
+  // State machine: 0=topic, 1=audience_level, 2=audience_stack, 3=duration, 4=confirm
   const [step, setStep] = useState(0);
   
   // Collected data
@@ -42,7 +39,6 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
   const [audienceLevel, setAudienceLevel] = useState<AudienceLevel>('beginner');
   const [audienceStack, setAudienceStack] = useState('');
   const [duration, setDuration] = useState(60);
-  const [difficulty, setDifficulty] = useState<Difficulty>('beginner');
   
   // UI state for current step
   const [inputValue, setInputValue] = useState('');
@@ -119,25 +115,9 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
     }
   }, { isActive: step === 3 });
 
-  // Step 4: Difficulty (select)
+  // Step 4: Confirm (y/n)
   useInput((input, key) => {
     if (step === 4) {
-      if (key.upArrow) {
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : DIFFICULTY_LEVELS.length - 1));
-      } else if (key.downArrow) {
-        setSelectedIndex((prev) => (prev < DIFFICULTY_LEVELS.length - 1 ? prev + 1 : 0));
-      } else if (key.return) {
-        setDifficulty(DIFFICULTY_LEVELS[selectedIndex]!);
-        setStep(5);
-      } else if (key.escape) {
-        exit();
-      }
-    }
-  }, { isActive: step === 4 });
-
-  // Step 5: Confirm (y/n)
-  useInput((input, key) => {
-    if (step === 5) {
       if (input === 'y' || input === 'Y') {
         onComplete({
           topic,
@@ -146,7 +126,6 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
             stack: audienceStack || undefined,
           },
           duration,
-          difficulty,
           contextFiles,
         });
       } else if (input === 'n' || input === 'N') {
@@ -155,7 +134,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         exit();
       }
     }
-  }, { isActive: step === 5 });
+  }, { isActive: step === 4 });
 
   return (
     <Box flexDirection="column" padding={1}>
@@ -169,7 +148,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
       {/* Step indicator */}
       <Box marginBottom={1}>
         <Text dimColor>
-          Step {step + 1} of 6
+          Step {step + 1} of 5
         </Text>
       </Box>
 
@@ -237,28 +216,8 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         </Box>
       )}
 
-      {/* Step 4: Difficulty */}
+      {/* Step 4: Confirm */}
       {step === 4 && (
-        <Box flexDirection="column">
-          <Text color="yellow">Select difficulty level:</Text>
-          <Box marginTop={1} flexDirection="column">
-            {DIFFICULTY_LEVELS.map((level, index) => (
-              <Box key={level}>
-                <Text color={index === selectedIndex ? 'green' : 'white'}>
-                  {index === selectedIndex ? '› ' : '  '}
-                  {level}
-                </Text>
-              </Box>
-            ))}
-          </Box>
-          <Box marginTop={1}>
-            <Text dimColor>Use ↑↓ to navigate, Enter to select</Text>
-          </Box>
-        </Box>
-      )}
-
-      {/* Step 5: Confirm */}
-      {step === 5 && (
         <Box flexDirection="column">
           <Text bold color="cyan">
             Review your workshop configuration:
@@ -281,10 +240,6 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
             <Box>
               <Text bold>Duration: </Text>
               <Text>{DURATION_OPTIONS.find(d => d.minutes === duration)?.label}</Text>
-            </Box>
-            <Box>
-              <Text bold>Difficulty: </Text>
-              <Text>{difficulty}</Text>
             </Box>
             {contextFiles.length > 0 && (
               <Box flexDirection="column">

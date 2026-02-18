@@ -14,7 +14,6 @@ export function exportToMarkdown(workshop: Workshop): string {
   lines.push(`**Topic:** ${workshop.topic}\n`);
   lines.push(`**Audience:** ${workshop.audience.level}${workshop.audience.stack ? ` (${workshop.audience.stack})` : ''}\n`);
   lines.push(`**Duration:** ${workshop.duration} minutes\n`);
-  lines.push(`**Difficulty:** ${workshop.difficulty}\n`);
   
   // Prerequisites
   if (workshop.prerequisites.length > 0) {

@@ -9,7 +9,7 @@ Workshop Factory is an AI-powered CLI tool that creates complete, practice-focus
 ## Features
 
 - **AI-powered generation** — Uses GitHub Copilot SDK to generate complete workshop content from topic + audience + duration
-- **Bloom's taxonomy alignment** — Learning objectives use appropriate cognitive action verbs (remember → create) based on difficulty level
+- **Bloom's taxonomy alignment** — Learning objectives use appropriate cognitive action verbs (remember → create) based on audience level
 - **Practice-first pedagogy** — Enforces ≥60% hands-on time (exercises + discussions), ≤25% lectures, ≥15% checkpoints
 - **Context injection** — Reference feature briefs, API docs, or release notes via `--context` flag for up-to-date, grounded examples
 - **Section-level regeneration** — Update specific sections with new context without regenerating the entire workshop
@@ -56,7 +56,6 @@ The wizard will prompt for:
 - Audience level (beginner/intermediate/advanced)
 - Technology stack (e.g., "Python/FastAPI")
 - Duration (minutes)
-- Difficulty preset
 
 Workshops are saved as YAML files — human-readable, git-friendly, and hand-editable.
 
@@ -121,7 +120,6 @@ audience:
   stack: "Python/FastAPI"
   size: 15
 duration: 120  # minutes
-difficulty: intermediate
 prerequisites:
   - "Basic command-line experience"
   - "Familiarity with Python"
@@ -179,7 +177,7 @@ modules:
 
 Workshop Factory enforces evidence-based learning principles (see `prompts/SKILL.md` for full details):
 
-- **Bloom's Taxonomy** — Learning objectives use cognitive action verbs matched to difficulty:
+- **Bloom's Taxonomy** — Learning objectives use cognitive action verbs matched to audience level:
   - Beginner: remember, understand, apply
   - Intermediate: apply, analyze
   - Advanced: analyze, evaluate, create
@@ -250,7 +248,7 @@ node dist/workshop.js new
 
 ## How It Works
 
-1. **Wizard** — Captures topic, audience (level + stack), duration, and difficulty
+1. **Wizard** — Captures topic, audience (level + stack), and duration
 2. **Context Loading** — Reads provided `--context` files and injects them into generation prompts
 3. **Generation Chain**:
    - **Analyze**: Topic + audience + context → subtopics, scope, prerequisites
@@ -295,7 +293,7 @@ See [`workshop-typescript-basics/`](workshop-typescript-basics/) in this repo fo
 ## Pain Points Addressed
 
 - **Stale content** — `--context` injection + targeted `regen` keep workshops up-to-date
-- **Audience adaptation** — Stack-specific code examples, difficulty-tuned exercises
+- **Audience adaptation** — Stack-specific code examples, level-tuned exercises
 - **Weak pedagogy** — Enforced practice ratios, Bloom's alignment, checkpoint spacing
 - **Not self-contained** — YAML bundles content + code + solutions; exports to portable formats
 

@@ -88,7 +88,6 @@ export const WorkshopSchema = z.object({
   topic: z.string(),
   audience: AudienceSchema,
   duration: z.number().positive(), // minutes
-  difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
   prerequisites: z.array(z.string()),
   context_sources: z.array(z.string()), // paths to injected docs
   modules: z.array(ModuleSchema),
