@@ -23,15 +23,17 @@ Workshop Factory is an AI-powered CLI tool that creates complete, practice-focus
 ## Quick Start
 
 ```bash
-# Install dependencies
-npm install
+# Run directly from GitHub (requires GitHub Copilot access)
+npx github:digitarald/workshop-factory new
 
-# Build the CLI
-npm run build
-
-# Create your first workshop
+# Or clone and build locally
+git clone https://github.com/digitarald/workshop-factory.git
+cd workshop-factory
+npm install  # prepare script builds automatically
 node dist/workshop.js new
 ```
+
+> **Note:** Workshop Factory uses the [GitHub Copilot SDK](https://github.com/github/copilot-sdk) (technical preview) for AI generation. You need an active GitHub Copilot subscription.
 
 ---
 
@@ -227,14 +229,19 @@ Key source files:
 ## Development
 
 ```bash
-# Watch mode (rebuilds on file changes)
+# Clone and install
+git clone https://github.com/digitarald/workshop-factory.git
+cd workshop-factory
+npm install
+
+# Watch mode (type-check on save)
 npm run dev
 
 # Production build
 npm run build
 
 # Run locally
-./dist/workshop.js new
+node dist/workshop.js new
 ```
 
 **Requirements**: Node.js ≥20.0.0
@@ -281,6 +288,8 @@ workshop generate docker-workshop.yaml
 # → workshop-docker-containerization/ (forkable template repo)
 ```
 
+See [`workshop-typescript-basics/`](workshop-typescript-basics/) in this repo for a complete generated example — slides, code scaffold, tests, and README.
+
 ---
 
 ## Pain Points Addressed
@@ -294,4 +303,4 @@ workshop generate docker-workshop.yaml
 
 ## License
 
-MIT
+[MIT](LICENSE)

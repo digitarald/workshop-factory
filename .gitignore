@@ -1,7 +1,7 @@
 node_modules/
 dist/
 workshop-*/
-*.tsbuildinfo
+!workshop-typescript-basics/*.tsbuildinfo
 .todos.db
 
 # Editor

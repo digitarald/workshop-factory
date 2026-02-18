@@ -4,13 +4,16 @@
   "type": "module",
   "description": "Generate pedagogically structured workshops from a topic + audience, powered by GitHub Copilot",
   "license": "MIT",
+  "author": "Harald Kirschner",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digitarald/workshop-factory.git"
+  },
   "bin": {
     "workshop": "./dist/workshop.js"
   },
-  "main": "./dist/workshop.js",
-  "types": "./dist/index.d.ts",
   "files": [
-    "dist",
+    "dist/*.js",
     "prompts"
   ],
   "scripts": {
@@ -20,7 +23,7 @@
     "dev": "tsc --watch --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "prepublishOnly": "npm run build"
+    "prepare": "npm run build"
   },
   "keywords": [
     "workshop",
