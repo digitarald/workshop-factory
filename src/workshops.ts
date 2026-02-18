@@ -23,13 +23,12 @@ export function getNewWorkshopConfigPath(topic: string): string {
   return `${slug}/${WORKSHOP_CONFIG_BASENAME}`;
 }
 
-export function getExportPath(workshopPath: string, format: 'md' | 'html'): string {
-  const extension = format === 'md' ? 'md' : 'html';
+export function getExportPath(workshopPath: string): string {
   if (/\.ya?ml$/i.test(workshopPath)) {
-    return workshopPath.replace(/\.ya?ml$/i, `.${extension}`);
+    return workshopPath.replace(/\.ya?ml$/i, '.md');
   }
 
-  return `${workshopPath}.${extension}`;
+  return `${workshopPath}.md`;
 }
 
 function isYamlFile(name: string): boolean {

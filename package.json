@@ -11,7 +11,7 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "docs/SKILL.md"
+    "prompts"
   ],
   "scripts": {
     "build": "tsc --noEmit && node esbuild.config.js",

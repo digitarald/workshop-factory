@@ -1,10 +1,10 @@
 node_modules/
 dist/
+workshop-*/
 *.tsbuildinfo
 .todos.db
 
 # Editor
-.vscode/
 .idea/
 *.swp
 *.swo

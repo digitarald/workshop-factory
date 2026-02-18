@@ -7,16 +7,16 @@ import { dirname, join } from 'node:path';
 import { loadWorkshop, saveWorkshop } from './storage.js';
 import { validateWorkshop } from './validation.js';
 import { exportToMarkdownFile } from './exporters/markdown.js';
-import { exportToHtmlFile } from './exporters/html.js';
 import { regenerateWorkshop } from './regen.js';
 import { shutdown } from './client.js';
 import { Wizard } from './components/Wizard.js';
 import { GenerationView } from './components/GenerationView.js';
 import { Summary } from './components/Summary.js';
+import { ExportProgress } from './components/ExportProgress.js';
 import { WorkshopPicker } from './components/WorkshopPicker.js';
 import type { Workshop } from './schema.js';
 import type { ValidationResult } from './validation.js';
-import { discoverExistingWorkshops, getExportPath, getNewWorkshopConfigPath } from './workshops.js';
+import { discoverExistingWorkshops, getExportPath, getNewWorkshopConfigPath, slugifyTopic } from './workshops.js';
 import type { ExistingWorkshop } from './workshops.js';
 
 /**
@@ -25,7 +25,8 @@ import type { ExistingWorkshop } from './workshops.js';
  * Commands:
  * - workshop new [--context <files...>]
  * - workshop regen <file> [sections] [--context <files...>]
- * - workshop export <file> --format md|html
+ * - workshop export <file>
+ * - workshop generate <file>
  * - workshop validate <file>
  */
 
@@ -33,7 +34,6 @@ interface ParsedArgs {
   command: string;
   positional: string[];
   context?: string[];
-  format?: 'md' | 'html';
 }
 
 /**
@@ -49,7 +49,6 @@ function parseArgs(argv: string[]): ParsedArgs {
   const command = args[0]!;
   const positional: string[] = [];
   let context: string[] | undefined;
-  let format: 'md' | 'html' | undefined;
 
   let i = 1;
   while (i < args.length) {
@@ -66,20 +65,6 @@ function parseArgs(argv: string[]): ParsedArgs {
       if (context.length === 0) {
         throw new Error('--context requires at least one file path');
       }
-    } else if (arg === '--format') {
-      // Next arg should be the format
-      i++;
-      if (i < args.length) {
-        const formatValue = args[i];
-        if (formatValue === 'md' || formatValue === 'html') {
-          format = formatValue;
-        } else {
-          throw new Error(`Invalid format "${formatValue}". Use "md" or "html".`);
-        }
-        i++;
-      } else {
-        throw new Error('--format requires a value (md or html)');
-      }
     } else if (!arg.startsWith('--')) {
       positional.push(arg);
       i++;
@@ -88,10 +73,10 @@ function parseArgs(argv: string[]): ParsedArgs {
     }
   }
 
-  return { command, positional, context, format };
+  return { command, positional, context };
 }
 
-type AppScreen = 'picker' | 'wizard' | 'generating' | 'summary';
+type AppScreen = 'picker' | 'wizard' | 'generating' | 'summary' | 'exporting';
 
 function App({ contextFiles }: { contextFiles?: string[] }) {
   const [screen, setScreen] = useState<AppScreen>('picker');
@@ -253,13 +238,11 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
         onAction={async (action) => {
           try {
             if (action === 'export-md') {
-              const outPath = getExportPath(savePath, 'md');
+              const outPath = getExportPath(savePath);
               await exportToMarkdownFile(workshop, outPath);
               console.log(`✓ Exported to ${outPath}`);
-            } else if (action === 'export-html') {
-              const outPath = getExportPath(savePath, 'html');
-              await exportToHtmlFile(workshop, outPath);
-              console.log(`✓ Exported to ${outPath}`);
+            } else if (action === 'generate-repo') {
+              setScreen('exporting');
             } else if (action === 'validate') {
               const result = validateWorkshop(workshop);
               const warnings = result.checks.filter(c => !c.passed).map(c => c.message);
@@ -274,6 +257,24 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
           } catch (e) {
             console.error(e instanceof Error ? e.message : String(e));
           }
+        }}
+      />
+    );
+  }
+
+  if (screen === 'exporting' && workshop) {
+    const repoDir = `workshop-${slugifyTopic(workshop.topic)}`;
+    return (
+      <ExportProgress
+        workshop={workshop}
+        outputDir={repoDir}
+        onComplete={(dir) => {
+          console.log(`\n✓ Workshop repo generated at ${dir}/`);
+          void shutdown().then(() => process.exit(0));
+        }}
+        onError={(err) => {
+          setSaveError(`Repo generation failed: ${err.message}`);
+          setScreen('summary');
         }}
       />
     );
@@ -338,20 +339,14 @@ async function handleRegen(
  */
 async function handleExport(
   file: string,
-  format: 'md' | 'html'
 ): Promise<void> {
   console.log(`Loading workshop from ${file}...`);
   const workshop = await loadWorkshop(file);
   
-  const outputPath = getExportPath(file, format);
+  const outputPath = getExportPath(file);
   
-  console.log(`Exporting to ${format.toUpperCase()}...`);
-  
-  if (format === 'md') {
-    await exportToMarkdownFile(workshop, outputPath);
-  } else {
-    await exportToHtmlFile(workshop, outputPath);
-  }
+  console.log(`Exporting to Markdown...`);
+  await exportToMarkdownFile(workshop, outputPath);
   
   console.log(`✓ Exported to ${outputPath}`);
 }
@@ -380,6 +375,40 @@ async function handleValidate(file: string): Promise<void> {
     const failedCount = result.checks.filter(c => !c.passed).length;
     console.log(`✗ Workshop failed ${failedCount} validation check(s)`);
     process.exit(1);
+  }
+}
+
+/**
+ * Handler for 'workshop generate' command — generates a forkable template repo.
+ */
+async function handleGenerate(file: string): Promise<void> {
+  const { generateRepo } = await import('./exporters/repo-generate.js');
+
+  console.log(`Loading workshop from ${file}...`);
+  const workshop = await loadWorkshop(file);
+
+  const repoDir = `workshop-${slugifyTopic(workshop.topic)}`;
+  console.log(`Generating template repo in ${repoDir}/...`);
+
+  try {
+    await generateRepo(workshop, repoDir, (event) => {
+      switch (event.type) {
+        case 'phase-start':
+          console.log(`\n→ Phase ${event.index + 1}/${event.total}: ${event.phase}`);
+          break;
+        case 'file-written':
+          console.log(`  + ${event.path} (${event.bytes} bytes)`);
+          break;
+        case 'static-written':
+          console.log(`  + ${event.path}`);
+          break;
+        case 'complete':
+          console.log(`\n✓ Workshop repo generated at ${event.outputDir}/`);
+          break;
+      }
+    });
+  } finally {
+    await shutdown();
   }
 }
 
@@ -419,10 +448,13 @@ Usage:
     - [sections]: Optional comma-separated section numbers (e.g., 1,3,5)
     - --context <files...>: Optional new context files to incorporate
 
-  workshop export <file> --format <md|html>
-    Export a workshop to Markdown or HTML.
+  workshop export <file>
+    Export a workshop to Markdown (instructor guide).
     - <file>: Path to workshop YAML file
-    - --format: Output format (md or html)
+
+  workshop generate <file>
+    Generate a forkable template repo with slides, code scaffold, and README.
+    - <file>: Path to workshop YAML file
 
   workshop validate <file>
     Validate workshop structure and pedagogical rules.
@@ -438,7 +470,8 @@ Examples:
   workshop new
   workshop new --context docs/feature-brief.md docs/api-spec.md
   workshop regen docker-basics/workshop.yaml 1,3 --context updated-docs.md
-  workshop export docker-basics/workshop.yaml --format md
+  workshop export docker-basics/workshop.yaml
+  workshop generate docker-basics/workshop.yaml
   workshop validate docker-basics/workshop.yaml
 `);
 }
@@ -483,12 +516,8 @@ async function main(): Promise<void> {
         throw new Error('"export" command requires a file path');
       }
 
-      if (!parsed.format) {
-        throw new Error('"export" command requires --format <md|html>');
-      }
-
       const file = parsed.positional[0]!;
-      await handleExport(file, parsed.format);
+      await handleExport(file);
       break;
     }
 
@@ -499,6 +528,16 @@ async function main(): Promise<void> {
 
       const file = parsed.positional[0]!;
       await handleValidate(file);
+      break;
+    }
+
+    case 'generate': {
+      if (parsed.positional.length === 0) {
+        throw new Error('"generate" command requires a file path');
+      }
+
+      const file = parsed.positional[0]!;
+      await handleGenerate(file);
       break;
     }
 

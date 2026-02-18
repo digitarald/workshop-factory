@@ -7,7 +7,7 @@ export interface SummaryProps {
   savePath: string;
   saveError?: string;
   validationWarnings?: string[];
-  onAction: (action: 'export-md' | 'export-html' | 'validate' | 'exit') => void | Promise<void>;
+  onAction: (action: 'export-md' | 'generate-repo' | 'validate' | 'exit') => void | Promise<void>;
 }
 
 /**
@@ -25,9 +25,9 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
   useInput((input) => {
     if (actionInFlight.current) return;
 
-    const actionMap: Record<string, 'export-md' | 'export-html' | 'validate' | 'exit'> = {
+    const actionMap: Record<string, 'export-md' | 'generate-repo' | 'validate' | 'exit'> = {
       e: 'export-md',
-      h: 'export-html',
+      g: 'generate-repo',
       v: 'validate',
       q: 'exit',
     };
@@ -138,7 +138,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
           <Box flexDirection="column" marginBottom={1}>
             <Text color="red">Save failed: {saveError}</Text>
             <Text dimColor>  Target: {savePath}</Text>
-            <Text dimColor>  Use [e] or [h] to export from memory</Text>
+            <Text dimColor>  Use [e] or [g] to export from memory</Text>
           </Box>
         ) : (
           <Box marginBottom={1}>
@@ -161,7 +161,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         <Box flexDirection="column">
           <Text bold>Next steps:</Text>
           <Text>[e] Export to Markdown</Text>
-          <Text>[h] Export to HTML</Text>
+          <Text>[g] Generate workshop repo</Text>
           <Text>[v] Validate structure</Text>
           <Text>[q] Exit</Text>
         </Box>

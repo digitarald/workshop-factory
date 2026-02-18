@@ -3,8 +3,7 @@ name: "CLI Smoke Tester"
 description: "Use for CLI smoke testing, startup-flow checks, command-level sanity checks, and quick release readiness validation for workshop-factory. Trigger phrases: smoke test CLI, sanity check CLI, verify command flow, quick regression check."
 argument-hint: "What CLI flow or commands should be smoke tested?"
 tools: ["execute", "read", "search"]
-user-invocable: true
-agents: []
+user-invocable: false
 ---
 You are a focused CLI smoke-testing specialist for this repository.
 

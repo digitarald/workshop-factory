@@ -13,7 +13,7 @@ Workshop Factory is an AI-powered CLI tool that creates complete, practice-focus
 - **Practice-first pedagogy** — Enforces ≥60% hands-on time (exercises + discussions), ≤25% lectures, ≥15% checkpoints
 - **Context injection** — Reference feature briefs, API docs, or release notes via `--context` flag for up-to-date, grounded examples
 - **Section-level regeneration** — Update specific sections with new context without regenerating the entire workshop
-- **Multi-format export** — Export to Markdown or HTML for distribution alongside repositories
+- **Template repo generation** — Generate a forkable repo with slides, code scaffold, and README via `workshop generate`
 - **Pedagogical validation** — Structural and quality checks ensure practice ratios, checkpoint spacing, and exercise completeness
 - **Interactive TUI wizard** — Guided workshop creation with streaming progress display
 - **Stack adaptation** — Code examples automatically match your audience's technology stack (Python/FastAPI, Node.js/Express, etc.)
@@ -74,17 +74,21 @@ Unchanged sections are preserved. Regeneration re-validates pedagogical rules.
 
 ### Export Workshop
 
-Convert YAML workshops to distributable formats:
+Export the instructor guide as Markdown:
 
 ```bash
-# Export to Markdown
-workshop export my-workshop.yaml --format md
-
-# Export to HTML (dark theme, print-friendly)
-workshop export my-workshop.yaml --format html
+workshop export my-workshop.yaml
 ```
 
-Exports include full content, code blocks, exercises, and checkpoints.
+### Generate Template Repo
+
+Generate a forkable template repo with attendee-facing slides, a code scaffold, and a root README:
+
+```bash
+workshop generate my-workshop.yaml
+```
+
+This creates a `workshop-<topic>/` directory containing slides (HTML/CSS/JS), a starter code project with exercises and solutions, and a GitHub Actions workflow for deploying slides to GitHub Pages.
 
 ### Validate Workshop
 
@@ -171,7 +175,7 @@ modules:
 
 ## Pedagogy Rules
 
-Workshop Factory enforces evidence-based learning principles (see `docs/SKILL.md` for full details):
+Workshop Factory enforces evidence-based learning principles (see `prompts/SKILL.md` for full details):
 
 - **Bloom's Taxonomy** — Learning objectives use cognitive action verbs matched to difficulty:
   - Beginner: remember, understand, apply
@@ -212,10 +216,11 @@ Key source files:
   - `validate.ts` — SDK tool wrapper for workshop validation
 - **`src/components/`** — Ink TUI components (Wizard, GenerationView, Summary)
 - **`src/exporters/`** — Output formatters:
-  - `markdown.ts` — Single-file Markdown export
-  - `html.ts` — Single-page HTML export (dark theme, print-friendly)
+  - `markdown.ts` — Single-file Markdown export (instructor guide)
+  - `repo-generate.ts` — Template repo generation orchestrator (slides, code scaffold, README)
+- **`src/tools/writeFile.ts`** — SDK tool for file output during repo generation
 
-**Pedagogy rules**: `docs/SKILL.md` encodes learning science principles for the Copilot SDK to follow during generation.
+**Pedagogy rules**: `prompts/SKILL.md` encodes learning science principles for the Copilot SDK to follow during generation.
 
 ---
 
@@ -246,7 +251,7 @@ npm run build
    - **Generate**: Section-by-section streaming (enables targeted regeneration)
    - **Validate**: Enforce practice ratios, checkpoint spacing, Bloom's alignment
 4. **Storage** — Save as YAML (human-editable, git-friendly)
-5. **Export** — Convert to Markdown or HTML for distribution
+5. **Export** — Convert to Markdown (instructor guide) or generate a forkable template repo
 
 ---
 
@@ -267,13 +272,13 @@ workshop regen actions-workshop.yaml 5,6,7 --context release-notes-v3.md
 # Regenerates sections 5-7 with updated API examples
 ```
 
-**Export for distribution:**
+**Export and generate:**
 ```bash
-workshop export docker-workshop.yaml --format md
-# → docker-workshop.md (include in repo README)
+workshop export docker-workshop.yaml
+# → docker-workshop.md (instructor guide)
 
-workshop export docker-workshop.yaml --format html
-# → docker-workshop.html (standalone page for workshops)
+workshop generate docker-workshop.yaml
+# → workshop-docker-containerization/ (forkable template repo)
 ```
 
 ---

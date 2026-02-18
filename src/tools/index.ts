@@ -7,3 +7,5 @@
 export { saveWorkshopTool } from './save.js';
 export { loadWorkshopTool } from './load.js';
 export { validateStructureTool } from './validate.js';
+export { createWriteFileTool } from './writeFile.js';
+export type { WriteFileCallbacks } from './writeFile.js';

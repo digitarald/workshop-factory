@@ -134,6 +134,7 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
         // Phase 3: Generate modules section by section
         setPhase('generating');
         const generatedModules: Module[] = [];
+        const MAX_RETRIES = 2;
 
         for (let i = 0; i < outlineModules.length; i++) {
           if (cancelled) return;
@@ -145,19 +146,41 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
             }))
           );
 
-          const genPrompt = buildGeneratePrompt(outlineJson, i, workshopParams, contextContent);
-          let moduleJson = '';
-          for await (const chunk of streamResponse(session, genPrompt)) {
+          let moduleParsed: Module | undefined;
+          let lastError: unknown;
+
+          for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
             if (cancelled) return;
-            if (chunk.type === 'complete') {
-              moduleJson = chunk.content;
-            } else {
-              setStreamContent(chunk.accumulated.slice(-500)); // Show tail of streaming content
+
+            const genPrompt = attempt === 0
+              ? buildGeneratePrompt(outlineJson, i, workshopParams, contextContent)
+              : `The previous response was truncated or malformed. Please regenerate module ${i + 1} completely. ${buildGeneratePrompt(outlineJson, i, workshopParams, contextContent)}`;
+
+            let moduleJson = '';
+            for await (const chunk of streamResponse(session, genPrompt)) {
+              if (cancelled) return;
+              if (chunk.type === 'complete') {
+                moduleJson = chunk.content;
+              } else {
+                setStreamContent(chunk.accumulated.slice(-500));
+              }
+            }
+            moduleJson = extractJson(moduleJson);
+
+            try {
+              moduleParsed = ModuleSchema.parse(JSON.parse(moduleJson));
+              break; // Success
+            } catch (err) {
+              lastError = err;
+              if (attempt < MAX_RETRIES) {
+                setStreamContent(`Module ${i + 1} response was malformed, retrying (${attempt + 1}/${MAX_RETRIES})...`);
+              }
             }
           }
-          moduleJson = extractJson(moduleJson);
 
-          const moduleParsed = ModuleSchema.parse(JSON.parse(moduleJson));
+          if (!moduleParsed) {
+            throw lastError instanceof Error ? lastError : new Error(`Failed to parse module ${i + 1} after ${MAX_RETRIES + 1} attempts`);
+          }
           generatedModules.push(moduleParsed);
 
           // Mark module complete

@@ -1,0 +1,115 @@
+title: "Intro to TypeScript"
+topic: typescript-basics
+audience:
+  level: beginner
+  stack: TypeScript/Node.js
+duration: 60
+difficulty: beginner
+prerequisites:
+  - Basic JavaScript knowledge
+context_sources: []
+modules:
+  - title: "Getting Started with TypeScript"
+    duration: 30
+    learning_objectives:
+      - text: "Set up a TypeScript project"
+        blooms_level: apply
+      - text: "Understand type annotations"
+        blooms_level: understand
+    sections:
+      - type: lecture
+        title: "What is TypeScript?"
+        duration: 5
+        talking_points:
+          - "TypeScript adds static types to JavaScript"
+          - "Catches errors at compile time"
+          - "Compiles to plain JavaScript"
+      - type: exercise
+        title: "Your First TypeScript File"
+        duration: 15
+        instructions: "Create a file called hello.ts and add type annotations to the variables."
+        starter_code: |
+          // TODO: Add type annotations
+          let greeting = "Hello"
+          let count = 42
+          let active = true
+        solution: |
+          let greeting: string = "Hello"
+          let count: number = 42
+          let active: boolean = true
+        hints:
+          - "Use : string, : number, : boolean after variable names"
+          - "TypeScript can infer types, but explicit annotations help readability"
+      - type: checkpoint
+        title: "Type Basics Check"
+        duration: 5
+        questions:
+          - "What command compiles TypeScript to JavaScript?"
+          - "What happens if you assign a string to a number-typed variable?"
+        expected_answers:
+          - "tsc"
+          - "TypeScript shows a compile-time error"
+        explanations:
+          - "The TypeScript compiler (tsc) transpiles .ts files to .js"
+          - "Type checking prevents type mismatches before runtime"
+      - type: discussion
+        title: "When to Use TypeScript"
+        duration: 5
+        prompts:
+          - "What problems have you experienced that types could prevent?"
+          - "When might TypeScript add too much overhead?"
+  - title: "Functions and Interfaces"
+    duration: 30
+    learning_objectives:
+      - text: "Define typed functions"
+        blooms_level: apply
+      - text: "Create and use interfaces"
+        blooms_level: apply
+    sections:
+      - type: lecture
+        title: "Typing Functions"
+        duration: 5
+        talking_points:
+          - "Parameter types and return types"
+          - "Optional and default parameters"
+          - "Arrow functions with types"
+      - type: exercise
+        title: "Build a Typed Utility"
+        duration: 15
+        instructions: "Create a utility module with typed functions for string manipulation."
+        starter_code: |
+          // TODO: Add parameter and return types
+          function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1)
+          }
+          function repeat(str, times) {
+            return str.repeat(times)
+          }
+        solution: |
+          function capitalize(str: string): string {
+            return str.charAt(0).toUpperCase() + str.slice(1)
+          }
+          function repeat(str: string, times: number): string {
+            return str.repeat(times)
+          }
+        hints:
+          - "Function parameters need type annotations after the parameter name"
+          - "Return types go after the closing parenthesis with a colon"
+      - type: checkpoint
+        title: "Functions & Interfaces Check"
+        duration: 5
+        questions:
+          - "How do you mark a function parameter as optional?"
+          - "What is the difference between type and interface?"
+        expected_answers:
+          - "Add a ? after the parameter name"
+          - "Interfaces are extendable and for object shapes; type aliases are more flexible for unions and intersections"
+        explanations:
+          - "Optional parameters use the ? syntax: function greet(name?: string)"
+          - "Both work for objects, but interfaces support declaration merging"
+      - type: discussion
+        title: "Wrap Up"
+        duration: 5
+        prompts:
+          - "What TypeScript feature are you most excited to use?"
+          - "How would you introduce TypeScript to an existing JavaScript project?"

@@ -11,6 +11,7 @@
 import { readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Workshop } from './schema.js';
 
 /**
  * Get the system prompt that instructs the model on workshop generation.
@@ -28,7 +29,7 @@ export async function getSystemPrompt(): Promise<string> {
     // Read SKILL.md relative to this module (works when installed as CLI too)
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const skillPath = join(__dirname, '..', 'docs', 'SKILL.md');
+    const skillPath = join(__dirname, '..', 'prompts', 'SKILL.md');
     skillContent = await readFile(skillPath, 'utf-8');
   } catch {
     // Fallback if SKILL.md doesn't exist yet
@@ -411,4 +412,129 @@ ${newContext ? '5. Ground regenerated sections in the new context provided' : ''
 \`\`\``;
 
   return prompt;
+}
+
+/**
+ * Load a design document from the prompts/ directory relative to the package root.
+ * Used by the generate prompt builders to inject design system prompts.
+ *
+ * @param docName - Filename inside prompts/ (e.g., "WORKSHOP-DESIGN.md")
+ * @returns File contents as string
+ */
+export async function loadDesignDoc(docName: string): Promise<string> {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const docPath = join(__dirname, '..', 'prompts', docName);
+  try {
+    return await readFile(docPath, 'utf-8');
+  } catch (err) {
+    throw new Error(
+      `Prompt template "${docName}" not found at ${docPath}. ` +
+      `Ensure the prompts/ directory is included in the package.`,
+      { cause: err },
+    );
+  }
+}
+
+/**
+ * Serialize a Workshop object as a compact JSON string for prompt injection.
+ */
+function serializeWorkshopForPrompt(workshop: Workshop): string {
+  return JSON.stringify(workshop, null, 2);
+}
+
+/**
+ * Build the slides generation prompt.
+ * Instructs the model to generate attendee-facing HTML slides
+ * using the write_file tool for each output file.
+ *
+ * @param workshop - The generated Workshop data
+ * @returns System + user prompt pair
+ */
+export async function buildSlidesPrompt(workshop: Workshop): Promise<{ system: string; user: string }> {
+  const designDoc = await loadDesignDoc('WORKSHOP-DESIGN.md');
+
+  const system = `${designDoc}
+
+You have access to the \`write_file\` tool. Call it once per file with relative paths under "slides/".`;
+
+  const user = `Generate the attendee-facing HTML slides for this workshop.
+
+**Workshop Data**:
+\`\`\`json
+${serializeWorkshopForPrompt(workshop)}
+\`\`\`
+
+Create the following files using the write_file tool:
+1. slides/index.html — main slides page
+2. slides/styles.css — stylesheet
+3. slides/script.js — interactivity (navigation, code highlighting, progress tracking)
+
+Follow all design rules from your system instructions. Transform instructor content (talking points, Bloom's levels) into attendee-friendly prose. Do NOT expose internal metadata.`;
+
+  return { system, user };
+}
+
+/**
+ * Build the code scaffold generation prompt.
+ * Instructs the model to generate a runnable starter project
+ * using the write_file tool for each output file.
+ *
+ * @param workshop - The generated Workshop data
+ * @returns System + user prompt pair
+ */
+export async function buildScaffoldPrompt(workshop: Workshop): Promise<{ system: string; user: string }> {
+  const designDoc = await loadDesignDoc('WORKSHOP-SCAFFOLD.md');
+
+  const system = `${designDoc}
+
+You have access to the \`write_file\` tool. Call it once per file with relative paths under "code/".`;
+
+  const user = `Generate the code scaffold for this workshop.
+
+**Workshop Data**:
+\`\`\`json
+${serializeWorkshopForPrompt(workshop)}
+\`\`\`
+
+Create the project files using the write_file tool. Include:
+- code/package.json (or equivalent for the stack)
+- code/README.md with exercise instructions
+- Starter code files (one per exercise)
+- Solution files under code/solutions/
+- Any configuration files needed to run the project
+
+The scaffold must work out-of-the-box after \`npm install\` (or equivalent). Map each exercise section to a source file with clear TODO comments.`;
+
+  return { system, user };
+}
+
+/**
+ * Build the root README generation prompt.
+ * Instructs the model to generate an attendee-facing README.md
+ * for the template repo root.
+ *
+ * @param workshop - The generated Workshop data
+ * @returns System + user prompt pair
+ */
+export async function buildReadmePrompt(workshop: Workshop): Promise<{ system: string; user: string }> {
+  const designDoc = await loadDesignDoc('WORKSHOP-README.md');
+
+  const system = `${designDoc}
+
+You have access to the \`write_file\` tool. Call it to write the root README.md file.`;
+
+  const user = `Generate the attendee-facing root README.md for this workshop repo.
+
+**Workshop Data**:
+\`\`\`json
+${serializeWorkshopForPrompt(workshop)}
+\`\`\`
+
+Write a single file using the write_file tool:
+- README.md (at the repo root, NOT under slides/ or code/)
+
+Follow the structure from your system instructions: title, what you'll learn, prerequisites, quick start (fork → clone → install), link to GitHub Pages slides, and repo structure overview. Do NOT include Bloom's taxonomy or instructor metadata.`;
+
+  return { system, user };
 }
