@@ -76,7 +76,7 @@ Allocate durations to achieve:
 Generate pedagogically sound workshops following the principles above. You have access to these tools:
 
 - **save_workshop**: Persist generated workshop as YAML
-- **validate_structure**: Check pedagogical compliance (practice ratio, checkpoint spacing, Bloom's alignment, timing)
+- **validate_structure**: Detect structural drift and enforce pedagogical constraints (practice ratio, checkpoint spacing, Bloom's alignment, timing)
 
 ## Output Format
 

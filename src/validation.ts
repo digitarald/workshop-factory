@@ -15,7 +15,11 @@ import type { Workshop, BloomsLevel } from './schema.js';
 export interface ValidationCheck {
   rule: string;
   passed: boolean;
+  /** 'error' for structural violations, 'suggestion' for pedagogical recommendations */
+  severity: 'error' | 'suggestion';
   message: string;
+  /** Actionable remediation hint shown when the check fails */
+  remediation?: string;
 }
 
 /**
@@ -24,6 +28,62 @@ export interface ValidationCheck {
 export interface ValidationResult {
   valid: boolean;
   checks: ValidationCheck[];
+}
+
+/**
+ * Format validation results as drift-detection output with grouped findings
+ * and actionable remediation hints.
+ *
+ * @param result - Validation result from validateWorkshop / validateWorkshopAsync
+ * @param title  - Optional workshop title to include in the header
+ * @returns Multi-line string ready for console output
+ */
+export function formatValidationOutput(result: ValidationResult, title?: string): string {
+  const lines: string[] = [];
+
+  const titleStr = title ? ` for "${title}"` : '';
+  lines.push(`Checking structural constraints${titleStr}...`);
+  lines.push('');
+
+  const errors = result.checks.filter(c => !c.passed && c.severity === 'error');
+  const suggestions = result.checks.filter(c => !c.passed && c.severity === 'suggestion');
+
+  if (errors.length > 0) {
+    lines.push(`Errors (${errors.length}):`);
+    for (const check of errors) {
+      lines.push(`  ✗ ${check.message}`);
+      if (check.remediation) {
+        lines.push(`    → ${check.remediation}`);
+      }
+    }
+    lines.push('');
+  }
+
+  if (suggestions.length > 0) {
+    lines.push(`Suggestions (${suggestions.length}):`);
+    for (const check of suggestions) {
+      lines.push(`  ⚠ ${check.message}`);
+      if (check.remediation) {
+        lines.push(`    → ${check.remediation}`);
+      }
+    }
+    lines.push('');
+  }
+
+  if (errors.length === 0 && suggestions.length === 0) {
+    lines.push('  ✓ All checks passed');
+    lines.push('');
+  }
+
+  // Summary line
+  const total = result.checks.length;
+  const parts: string[] = [`${total} constraints checked`];
+  if (errors.length > 0) parts.push(`${errors.length} error${errors.length === 1 ? '' : 's'}`);
+  if (suggestions.length > 0) parts.push(`${suggestions.length} suggestion${suggestions.length === 1 ? '' : 's'}`);
+  if (errors.length === 0 && suggestions.length === 0) parts.push('all passed');
+  lines.push(parts.join(', ') + ' — human review recommended');
+
+  return lines.join('\n');
 }
 
 /**
@@ -62,9 +122,11 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'duration_sum',
       passed,
+      severity: 'error',
       message: passed
         ? `Module ${moduleIdx + 1} sections sum to ${sectionSum}min (module: ${module.duration}min)`
         : `Module ${moduleIdx + 1} sections sum to ${sectionSum}min but module duration is ${module.duration}min (diff: ${diff}min, tolerance: ±2min)`,
+      remediation: passed ? undefined : `Adjust section durations to total ${module.duration}min, or update module ${moduleIdx + 1} duration to ${sectionSum}min`,
     });
   }
 
@@ -75,9 +137,11 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
   checks.push({
     rule: 'total_duration',
     passed: totalPassed,
+    severity: 'error',
     message: totalPassed
       ? `Module durations sum to ${moduleSum}min (workshop: ${workshop.duration}min)`
       : `Module durations sum to ${moduleSum}min but workshop duration is ${workshop.duration}min (diff: ${totalDiff}min, tolerance: ±5min)`,
+    remediation: totalPassed ? undefined : `Adjust module durations to total ${workshop.duration}min, or update workshop duration to ${moduleSum}min`,
   });
 
   // 3. Exercise completeness: every exercise section has starter_code AND solution (non-empty)
@@ -94,7 +158,11 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
           checks.push({
             rule: 'exercise_completeness',
             passed: false,
+            severity: 'error',
             message: `Module ${moduleIdx + 1}, Section ${sectionIdx + 1} (${section.title}): missing ${!hasStarter ? 'starter_code' : 'solution'}`,
+            remediation: !hasStarter
+              ? `Add a starter_code template for participants to begin from in "${section.title}"`
+              : `Add a complete working solution to "${section.title}"`,
           });
         }
       }
@@ -104,13 +172,16 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'exercise_completeness',
       passed: true,
+      severity: 'error',
       message: `All ${exerciseCount} exercises have starter_code and solution`,
     });
   } else if (exerciseCount === 0) {
     checks.push({
       rule: 'exercise_completeness',
       passed: false,
+      severity: 'error',
       message: 'No exercises found in workshop',
+      remediation: 'Add at least one exercise section to enable active learning',
     });
   }
 
@@ -130,9 +201,11 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'checkpoint_spacing',
       passed,
+      severity: 'suggestion',
       message: passed
         ? `Module ${moduleIdx + 1} has checkpoints every ≤25min (max gap: ${maxGap}min)`
         : `Module ${moduleIdx + 1} has a ${maxGap}min gap without checkpoints (max allowed: 25min)`,
+      remediation: passed ? undefined : `Add a checkpoint section in module ${moduleIdx + 1} to assess understanding every ≤25min`,
     });
   }
 
@@ -150,9 +223,11 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
   checks.push({
     rule: 'practice_ratio',
     passed: practicePass,
+    severity: 'suggestion',
     message: practicePass
       ? `Practice time is ${practiceRatio.toFixed(1)}% of total (${practiceTime}/${workshop.duration}min)`
       : `Practice time is ${practiceRatio.toFixed(1)}% of total (${practiceTime}/${workshop.duration}min), needs ≥60%`,
+    remediation: practicePass ? undefined : `Convert ${Math.ceil(0.6 * workshop.duration - practiceTime)}min of lecture content into exercises or discussions`,
   });
 
   // 6. Lecture ratio: lectures ≤ 25% of total duration
@@ -169,9 +244,11 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
   checks.push({
     rule: 'lecture_ratio',
     passed: lecturePass,
+    severity: 'suggestion',
     message: lecturePass
       ? `Lecture time is ${lectureRatio.toFixed(1)}% of total (${lectureTime}/${workshop.duration}min)`
       : `Lecture time is ${lectureRatio.toFixed(1)}% of total (${lectureTime}/${workshop.duration}min), should be ≤25%`,
+    remediation: lecturePass ? undefined : `Reduce lecture content by ${Math.ceil(lectureTime - 0.25 * workshop.duration)}min — convert to exercises or discussions`,
   });
 
   // 7. Checkpoint ratio: checkpoints ≥ 15% of total duration
@@ -188,9 +265,11 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
   checks.push({
     rule: 'checkpoint_ratio',
     passed: checkpointPass,
+    severity: 'suggestion',
     message: checkpointPass
       ? `Checkpoint time is ${checkpointRatio.toFixed(1)}% of total (${checkpointTime}/${workshop.duration}min)`
       : `Checkpoint time is ${checkpointRatio.toFixed(1)}% of total (${checkpointTime}/${workshop.duration}min), needs ≥15%`,
+    remediation: checkpointPass ? undefined : `Add ${Math.ceil(0.15 * workshop.duration - checkpointTime)}min of checkpoint activities across modules`,
   });
 
   // 8. Max lecture section duration: no single lecture section should exceed 15 minutes
@@ -200,7 +279,9 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
         checks.push({
           rule: 'max_lecture_duration',
           passed: false,
+          severity: 'suggestion',
           message: `Module ${moduleIdx + 1}, Section ${sectionIdx + 1} "${section.title}": lecture is ${section.duration}min, should be ≤15min`,
+          remediation: `Break "${section.title}" into segments ≤15min each, interleaved with exercises or discussions`,
         });
       }
     }
@@ -209,6 +290,7 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'max_lecture_duration',
       passed: true,
+      severity: 'suggestion',
       message: 'All lecture sections are ≤15 minutes',
     });
   }
@@ -220,7 +302,9 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
         checks.push({
           rule: 'min_section_duration',
           passed: false,
+          severity: 'error',
           message: `Module ${moduleIdx + 1}, Section ${sectionIdx + 1} "${section.title}": duration is ${section.duration}min, should be ≥5min`,
+          remediation: `Extend "${section.title}" to at least 5min or merge it with an adjacent section`,
         });
       }
     }
@@ -229,6 +313,7 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'min_section_duration',
       passed: true,
+      severity: 'error',
       message: 'All sections are ≥5 minutes',
     });
   }
@@ -241,10 +326,14 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
       // Check if the Bloom's level is appropriate for audience level
       if (!expectedLevels.includes(objective.blooms_level)) {
         bloomsIssues++;
+        const firstExpected = expectedLevels[0];
+        const exampleVerbs = firstExpected ? (BLOOMS_VERBS[firstExpected] ?? []).slice(0, 2).join('" or "') : '';
         checks.push({
           rule: 'blooms_alignment',
           passed: false,
+          severity: 'suggestion',
           message: `Module ${moduleIdx + 1}, Objective ${objIdx + 1}: "${objective.text}" uses "${objective.blooms_level}" level, but ${workshop.audience.level}-level workshops should focus on: ${expectedLevels.join(', ')}`,
+          remediation: `Rewrite to target ${expectedLevels.join(' or ')} cognitive level — e.g., start with "${exampleVerbs}"`,
         });
       }
 
@@ -256,7 +345,9 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
         checks.push({
           rule: 'blooms_alignment',
           passed: false,
+          severity: 'suggestion',
           message: `Module ${moduleIdx + 1}, Objective ${objIdx + 1}: "${objective.text}" doesn't start with a typical "${objective.blooms_level}" verb (expected: ${verbsForLevel.slice(0, 3).join(', ')}, ...)`,
+          remediation: `Start objective with a "${objective.blooms_level}" action verb — e.g., "${verbsForLevel.slice(0, 3).join('", "')}"`,
         });
       }
     }
@@ -266,6 +357,7 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'blooms_alignment',
       passed: true,
+      severity: 'suggestion',
       message: `All ${totalObjectives} learning objectives use appropriate Bloom's levels and verbs for ${workshop.audience.level}-level audience`,
     });
   }
@@ -275,6 +367,7 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     checks.push({
       rule: 'context_sources',
       passed: true,
+      severity: 'error',
       message: `Workshop lists ${workshop.context_sources.length} context source(s): ${workshop.context_sources.join(', ')}`,
     });
   }
@@ -316,13 +409,16 @@ export async function validateWorkshopAsync(workshop: Workshop): Promise<Validat
         result.checks[contextCheckIdx] = {
           rule: 'context_sources',
           passed: false,
+          severity: 'error',
           message: `Warning: ${missingFiles.length} context source(s) not found on disk: ${missingFiles.map((f) => f.path).join(', ')}`,
+          remediation: 'Check that paths are correct relative to your working directory',
         };
         result.valid = false;
       } else {
         result.checks[contextCheckIdx] = {
           rule: 'context_sources',
           passed: true,
+          severity: 'error',
           message: `All ${workshop.context_sources.length} context source files exist on disk`,
         };
       }
