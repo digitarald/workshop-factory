@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text, useApp, useInput } from 'ink';
+import { useKeyboard, useRenderer } from '@opentui/react';
 import type { ExistingWorkshop } from '../workshops.js';
 
 export interface WorkshopPickerProps {
@@ -19,109 +19,102 @@ export function WorkshopPicker({
   onCreateNew,
   onSelect,
 }: WorkshopPickerProps) {
-  const { exit } = useApp();
+  const renderer = useRenderer();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const optionCount = workshops.length + 1;
 
-  useInput((_, key) => {
-    if (isLoading || isOpening) {
-      if (key.escape) {
-        exit();
-      }
+  useKeyboard((key) => {
+    if (key.name === 'escape') {
+      renderer.destroy();
       return;
     }
 
-    if (key.upArrow) {
+    if (isLoading || isOpening) return;
+
+    if (key.name === 'up') {
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : optionCount - 1));
       return;
     }
 
-    if (key.downArrow) {
+    if (key.name === 'down') {
       setSelectedIndex((prev) => (prev < optionCount - 1 ? prev + 1 : 0));
       return;
     }
 
-    if (key.return) {
+    if (key.name === 'return' || key.name === 'enter') {
       if (selectedIndex === 0) {
         onCreateNew();
         return;
       }
 
       const workshop = workshops[selectedIndex - 1];
-      if (!workshop) {
-        return;
-      }
+      if (!workshop) return;
 
       onSelect(workshop);
-      return;
-    }
-
-    if (key.escape) {
-      exit();
     }
   });
 
   return (
-    <Box flexDirection="column" padding={1}>
-      <Box marginBottom={1}>
-        <Text bold color="cyan">Workshop Factory</Text>
-      </Box>
+    <box flexDirection="column" padding={1}>
+      <box marginBottom={1}>
+        <text fg="cyan"><strong>Workshop Factory</strong></text>
+      </box>
 
-      <Box marginBottom={1}>
-        <Text color="yellow">Select a workshop:</Text>
-      </Box>
+      <box marginBottom={1}>
+        <text fg="yellow">Select a workshop:</text>
+      </box>
 
       {error && (
-        <Box marginBottom={1}>
-          <Text color="red">{error}</Text>
-        </Box>
+        <box marginBottom={1}>
+          <text fg="red">{error}</text>
+        </box>
       )}
 
       {isLoading ? (
-        <Text dimColor>Loading workshops...</Text>
+        <text fg="#888888">Loading workshops...</text>
       ) : (
-        <Box flexDirection="column">
-          <Box flexDirection="column" marginBottom={workshops.length > 0 ? 1 : 0}>
-            <Text color={selectedIndex === 0 ? 'green' : 'white'}>
+        <box flexDirection="column">
+          <box flexDirection="column" marginBottom={workshops.length > 0 ? 1 : 0}>
+            <text fg={selectedIndex === 0 ? 'green' : 'white'}>
               {selectedIndex === 0 ? '› ' : '  '}
               Create new workshop
-            </Text>
-          </Box>
+            </text>
+          </box>
 
           {workshops.length === 0 ? (
-            <Text dimColor>No existing workshops found in this directory.</Text>
+            <text fg="#888888">No existing workshops found in this directory.</text>
           ) : (
             workshops.map((workshop, index) => {
               const itemIndex = index + 1;
               const selected = selectedIndex === itemIndex;
               return (
-                <Box key={workshop.path} flexDirection="column" marginBottom={1}>
-                  <Text color={selected ? 'green' : 'white'}>
+                <box key={workshop.path} flexDirection="column" marginBottom={1}>
+                  <text fg={selected ? 'green' : 'white'}>
                     {selected ? '› ' : '  '}
                     {workshop.title}
-                  </Text>
-                  <Box paddingLeft={2}>
-                    <Text dimColor>
+                  </text>
+                  <box paddingLeft={2}>
+                    <text fg="#888888">
                       {workshop.path} • {workshop.duration} min • {workshop.moduleCount} modules
-                    </Text>
-                  </Box>
-                </Box>
+                    </text>
+                  </box>
+                </box>
               );
             })
           )}
-        </Box>
+        </box>
       )}
 
-      <Box marginTop={1}>
-        <Text dimColor>
+      <box marginTop={1}>
+        <text fg="#888888">
           {isLoading
             ? 'Loading workshops... Press ESC to cancel'
             : isOpening
               ? 'Opening workshop... Press ESC to cancel'
               : 'Use ↑↓ to navigate, Enter to select, ESC to cancel'}
-        </Text>
-      </Box>
-    </Box>
+        </text>
+      </box>
+    </box>
   );
 }

@@ -1,6 +1,8 @@
 import * as esbuild from 'esbuild';
 
-await esbuild.build({
+const isWatch = process.argv.includes('--watch');
+
+const ctx = await esbuild.context({
   entryPoints: ['src/index.tsx'],
   bundle: true,
   outfile: 'dist/workshop.js',
@@ -9,16 +11,23 @@ await esbuild.build({
   target: 'node20',
   sourcemap: true,
   jsx: 'automatic',
-  jsxImportSource: 'react',
+  jsxImportSource: '@opentui/react',
   external: [
-    'ink',
+    '@opentui/core',
+    '@opentui/react',
     'react',
     'react/jsx-runtime',
     'react-devtools-core',
-    'yoga-wasm-web',
     '@github/copilot-sdk',
     'node:*',
   ],
 });
 
-console.log('✓ Built dist/workshop.js');
+if (isWatch) {
+  await ctx.watch();
+  console.log('✓ Watching for changes...');
+} else {
+  await ctx.rebuild();
+  await ctx.dispose();
+  console.log('✓ Built dist/workshop.js');
+}
