@@ -48,6 +48,95 @@ const LEVEL_BLOOMS_MAP: Record<'beginner' | 'intermediate' | 'advanced', BloomsL
 };
 
 /**
+ * Extract cognitive level from a text by finding Bloom's verbs
+ */
+function detectBloomsLevel(text: string): BloomsLevel[] {
+  const words = text.toLowerCase().split(/\s+/).map(w => w.replace(/[.,;:!?"'()[\]{}]/g, ''));
+  const detectedLevels: BloomsLevel[] = [];
+
+  for (const [level, verbs] of Object.entries(BLOOMS_VERBS)) {
+    for (const verb of verbs) {
+      // Match whole words or as prefix (e.g., "designing" matches "design")
+      if (words.some(word => word === verb || word.startsWith(verb))) {
+        detectedLevels.push(level as BloomsLevel);
+        break; // Only add each level once
+      }
+    }
+  }
+
+  return detectedLevels;
+}
+
+/**
+ * Find inappropriate Bloom's verbs in section content based on audience level
+ */
+interface VerbIssue {
+  message: string;
+}
+
+function findInappropriateVerbsInSections(workshop: Workshop): VerbIssue[] {
+  const issues: VerbIssue[] = [];
+  const allowedLevels = LEVEL_BLOOMS_MAP[workshop.audience.level];
+  
+  // Build a set of inappropriate levels for this audience
+  const allLevels: BloomsLevel[] = ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create'];
+  const inappropriateLevels = allLevels.filter(level => !allowedLevels.includes(level));
+
+  for (const [moduleIdx, module] of workshop.modules.entries()) {
+    for (const [sectionIdx, section] of module.sections.entries()) {
+      let contentToCheck: string[] = [];
+      let sectionType = '';
+
+      // Extract relevant text based on section type
+      switch (section.type) {
+        case 'exercise':
+          contentToCheck = [section.instructions];
+          sectionType = 'exercise instructions';
+          break;
+        case 'lecture':
+          contentToCheck = section.talking_points;
+          sectionType = 'lecture talking points';
+          break;
+        case 'discussion':
+          contentToCheck = section.prompts;
+          sectionType = 'discussion prompts';
+          break;
+        case 'checkpoint':
+          contentToCheck = section.questions;
+          sectionType = 'checkpoint questions';
+          break;
+      }
+
+      // Check each piece of content for inappropriate verbs
+      for (const content of contentToCheck) {
+        const detectedLevels = detectBloomsLevel(content);
+        
+        // Find any detected levels that are inappropriate for this audience
+        const problemLevels = detectedLevels.filter(level => inappropriateLevels.includes(level));
+        
+        if (problemLevels.length > 0) {
+          // Get example verbs from the problem levels for the error message
+          const problemVerbs = problemLevels.flatMap(level => {
+            const verbs = BLOOMS_VERBS[level];
+            // Find which verbs are actually in the content
+            const words = content.toLowerCase().split(/\s+/).map(w => w.replace(/[.,;:!?"'()[\]{}]/g, ''));
+            return verbs.filter(verb => words.some(word => word === verb || word.startsWith(verb)));
+          });
+
+          const contentPreview = content.length > 80 ? content.substring(0, 80) + '...' : content;
+          
+          issues.push({
+            message: `Module ${moduleIdx + 1}, Section ${sectionIdx + 1} "${section.title}" (${sectionType}): uses "${problemLevels.join('/')}" level verb(s) [${problemVerbs.slice(0, 3).join(', ')}${problemVerbs.length > 3 ? ', ...' : ''}] inappropriate for ${workshop.audience.level}-level (expected: ${allowedLevels.join(', ')}). Content: "${contentPreview}"`,
+          });
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
+/**
  * Validate workshop structure and pedagogical rules.
  * Returns detailed validation results with all checks.
  */
@@ -270,7 +359,25 @@ export function validateWorkshop(workshop: Workshop): ValidationResult {
     });
   }
 
-  // 11. Context sources: if context_sources listed, note for async checks
+  // 11. Section content Bloom's alignment: check if section content uses appropriate verbs
+  const inappropriateVerbs = findInappropriateVerbsInSections(workshop);
+  if (inappropriateVerbs.length > 0) {
+    for (const issue of inappropriateVerbs) {
+      checks.push({
+        rule: 'section_blooms_alignment',
+        passed: false,
+        message: issue.message,
+      });
+    }
+  } else {
+    checks.push({
+      rule: 'section_blooms_alignment',
+      passed: true,
+      message: `All section content uses appropriate cognitive level verbs for ${workshop.audience.level}-level audience`,
+    });
+  }
+
+  // 12. Context sources: if context_sources listed, note for async checks
   if (workshop.context_sources.length > 0) {
     checks.push({
       rule: 'context_sources',
