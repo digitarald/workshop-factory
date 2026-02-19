@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 import React, { useState, useCallback, useEffect } from 'react';
-import { createCliRenderer } from '@opentui/core';
-import { createRoot } from '@opentui/react';
+import { createCliRenderer, KeyEvent } from '@opentui/core';
+import { createRoot, useKeyboard } from '@opentui/react';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { useKeyboard, KeyEvent } from '@opentui/react';
 import { loadWorkshop, saveWorkshop } from './storage.js';
 import { validateWorkshop } from './validation.js';
 import { exportToMarkdownFile } from './exporters/markdown.js';
@@ -153,13 +152,15 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
 
   // Handle error state: allow retry or exit
   useKeyboard((event: KeyEvent) => {
+    if (!error) return;
+    
     if (event.name === 'r' || event.name === 'R') {
       setError(null);
       setScreen('wizard');
     } else if (event.name === 'q' || event.name === 'Q' || event.name === 'escape') {
       void shutdown().then(() => process.exit(1));
     }
-  }, { isActive: !!error });
+  });
 
   if (error) {
     return (

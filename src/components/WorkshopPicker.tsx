@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useKeyboard, KeyEvent, useRenderer } from '@opentui/react';
+import { useKeyboard, useRenderer } from '@opentui/react';
+import { KeyEvent } from '@opentui/core';
 import type { ExistingWorkshop } from '../workshops.js';
 
 export interface WorkshopPickerProps {

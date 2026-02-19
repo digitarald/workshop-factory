@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useKeyboard, KeyEvent, useRenderer } from '@opentui/react';
+import { useKeyboard, useRenderer } from '@opentui/react';
+import { KeyEvent } from '@opentui/core';
 
 interface WizardProps {
   contextFiles?: string[];
@@ -48,8 +49,9 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
   const [inputValue, setInputValue] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Step 0: Topic (text input)
+  // Unified keyboard handler for all steps
   useKeyboard((event: KeyEvent) => {
+    // Step 0: Topic (text input)
     if (step === 0) {
       if (event.name === 'return') {
         if (inputValue.trim()) {
@@ -65,11 +67,8 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         setInputValue(inputValue + event.key);
       }
     }
-  }, { isActive: step === 0 });
-
-  // Step 1: Audience Level (select)
-  useKeyboard((event: KeyEvent) => {
-    if (step === 1) {
+    // Step 1: Audience Level (select)
+    else if (step === 1) {
       if (event.name === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : AUDIENCE_LEVELS.length - 1));
       } else if (event.name === 'down') {
@@ -82,11 +81,8 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         exit();
       }
     }
-  }, { isActive: step === 1 });
-
-  // Step 2: Audience Stack (text input, optional)
-  useKeyboard((event: KeyEvent) => {
-    if (step === 2) {
+    // Step 2: Audience Stack (text input, optional)
+    else if (step === 2) {
       if (event.name === 'return') {
         setAudienceStack(inputValue.trim());
         setInputValue('');
@@ -100,11 +96,8 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         setInputValue(inputValue + event.key);
       }
     }
-  }, { isActive: step === 2 });
-
-  // Step 3: Duration (select)
-  useKeyboard((event: KeyEvent) => {
-    if (step === 3) {
+    // Step 3: Duration (select)
+    else if (step === 3) {
       if (event.name === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : DURATION_OPTIONS.length - 1));
       } else if (event.name === 'down') {
@@ -117,11 +110,8 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         exit();
       }
     }
-  }, { isActive: step === 3 });
-
-  // Step 4: Confirm (y/n)
-  useKeyboard((event: KeyEvent) => {
-    if (step === 4) {
+    // Step 4: Confirm (y/n)
+    else if (step === 4) {
       if (event.name === 'y' || event.name === 'Y') {
         onComplete({
           topic,
@@ -138,7 +128,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         exit();
       }
     }
-  }, { isActive: step === 4 });
+  });
 
   return (
     <box flexDirection="column" padding={1}>

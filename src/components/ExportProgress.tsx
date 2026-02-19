@@ -76,7 +76,7 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
 
   return (
     <box flexDirection="column" paddingX={2} paddingY={1}>
-      <Box
+      <box
         flexDirection="column"
         borderStyle="round"
         borderColor={done ? 'green' : 'blue'}
@@ -93,8 +93,8 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
         {/* Phase indicator */}
         {currentPhase && !done && (
           <box flexDirection="column" marginBottom={1}>
-            <Box>
-              <Text>
+            <box>
+              <text>
                 {PHASE_LABELS[currentPhase]} ({phaseIndex + 1}/{phaseTotal})...
               </text>
               {streamingChars > 0 && (
@@ -102,7 +102,7 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
               )}
             </box>
             {streamingPreview && (
-              <Box>
+              <box>
                 <text opacity={0.5}>  &ldquo;{streamingPreview.slice(-70).trimStart()}&hellip;&rdquo;</text>
               </box>
             )}
@@ -116,7 +116,7 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
             {files.map((file, idx) => (
               <box key={idx}>
                 <text fg="green">  + </text>
-                <Text>{file.path}</text>
+                <text>{file.path}</text>
                 {file.bytes > 0 && (
                   <text opacity={0.5}> ({formatBytes(file.bytes)})</text>
                 )}
@@ -127,8 +127,8 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
 
         {/* Output directory */}
         {done && (
-          <Box>
-            <Text>Output: </text>
+          <box>
+            <text>Output: </text>
             <text fg="cyan">{outputDir}</text>
           </box>
         )}

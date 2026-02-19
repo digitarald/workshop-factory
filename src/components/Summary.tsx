@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { useKeyboard, KeyEvent } from '@opentui/react';
+import { useKeyboard } from '@opentui/react';
+import { KeyEvent } from '@opentui/core';
 import type { Workshop } from '../schema.js';
 
 export interface SummaryProps {
@@ -42,7 +43,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
 
   return (
     <box flexDirection="column" paddingX={2} paddingY={1}>
-      <Box
+      <box
         flexDirection="column"
         borderStyle="round"
         borderColor={saveError ? 'yellow' : 'green'}
@@ -63,22 +64,22 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
 
         {/* Basic Stats */}
         <box flexDirection="column" marginBottom={1}>
-          <Box>
-            <Text>Duration:    </text>
+          <box>
+            <text>Duration:    </text>
             <text attributes="bold">{stats.totalDuration} min</text>
           </box>
-          <Box>
-            <Text>Modules:     </text>
+          <box>
+            <text>Modules:     </text>
             <text attributes="bold">{stats.moduleCount}</text>
           </box>
-          <Box>
-            <Text>Sections:    </text>
+          <box>
+            <text>Sections:    </text>
             <text attributes="bold">{stats.sectionCount}</text>
           </box>
         </box>
 
         {/* Duration Breakdown */}
-        <Box
+        <box
           flexDirection="column"
           borderStyle="round"
           borderColor="gray"
@@ -86,50 +87,50 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
           paddingY={0}
           marginBottom={1}
         >
-          <Box>
+          <box>
             <text attributes="bold">Duration Breakdown</text>
           </box>
           
           {/* Exercises */}
-          <Box>
-            <Text>Exercises:    </text>
-            <Text>{String(stats.exerciseDuration).padStart(2, ' ')} min ({stats.exercisePercent}%)  </text>
-            <Text>{renderBar(stats.exercisePercent)}</text>
+          <box>
+            <text>Exercises:    </text>
+            <text>{String(stats.exerciseDuration).padStart(2, ' ')} min ({stats.exercisePercent}%)  </text>
+            <text>{renderBar(stats.exercisePercent)}</text>
           </box>
 
           {/* Lectures */}
-          <Box>
-            <Text>Lectures:     </text>
-            <Text>{String(stats.lectureDuration).padStart(2, ' ')} min ({stats.lecturePercent}%)  </text>
-            <Text>{renderBar(stats.lecturePercent)}</text>
+          <box>
+            <text>Lectures:     </text>
+            <text>{String(stats.lectureDuration).padStart(2, ' ')} min ({stats.lecturePercent}%)  </text>
+            <text>{renderBar(stats.lecturePercent)}</text>
           </box>
 
           {/* Discussions */}
-          <Box>
-            <Text>Discussions:  </text>
-            <Text>{String(stats.discussionDuration).padStart(2, ' ')} min ({stats.discussionPercent}%)  </text>
-            <Text>{renderBar(stats.discussionPercent)}</text>
+          <box>
+            <text>Discussions:  </text>
+            <text>{String(stats.discussionDuration).padStart(2, ' ')} min ({stats.discussionPercent}%)  </text>
+            <text>{renderBar(stats.discussionPercent)}</text>
           </box>
 
           {/* Checkpoints */}
-          <Box>
-            <Text>Checkpoints:  </text>
-            <Text>{String(stats.checkpointDuration).padStart(2, ' ')} min ({stats.checkpointPercent}%)  </text>
-            <Text>{renderBar(stats.checkpointPercent)}</text>
+          <box>
+            <text>Checkpoints:  </text>
+            <text>{String(stats.checkpointDuration).padStart(2, ' ')} min ({stats.checkpointPercent}%)  </text>
+            <text>{renderBar(stats.checkpointPercent)}</text>
           </box>
         </box>
 
         {/* Additional Stats */}
         <box flexDirection="column" marginBottom={1}>
-          <Box>
-            <Text>Checkpoints:  </text>
+          <box>
+            <text>Checkpoints:  </text>
             <text attributes="bold">{stats.checkpointCount}</text>
-            <Text> (every ~{stats.avgCheckpointSpacing} min)</text>
+            <text> (every ~{stats.avgCheckpointSpacing} min)</text>
           </box>
-          <Box>
-            <Text>Exercises:    </text>
+          <box>
+            <text>Exercises:    </text>
             <text attributes="bold">{stats.exerciseCount}</text>
-            <Text> (with starter code + solutions)</text>
+            <text> (with starter code + solutions)</text>
           </box>
         </box>
 
@@ -142,7 +143,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
           </box>
         ) : (
           <box marginBottom={1}>
-            <Text>Saved to: </text>
+            <text>Saved to: </text>
             <text fg="cyan">{savePath}</text>
           </box>
         )}
@@ -160,10 +161,10 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         {/* Next Steps */}
         <box flexDirection="column">
           <text attributes="bold">Next steps:</text>
-          <Text>[e] Export to Markdown</text>
-          <Text>[g] Generate workshop repo</text>
-          <Text>[v] Validate structure</text>
-          <Text>[q] Exit</text>
+          <text>[e] Export to Markdown</text>
+          <text>[g] Generate workshop repo</text>
+          <text>[v] Validate structure</text>
+          <text>[q] Exit</text>
         </box>
       </box>
     </box>
