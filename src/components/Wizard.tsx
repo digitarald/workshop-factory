@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import { useKeyboard, useRenderer } from '@opentui/react';
 
 interface WizardProps {
   contextFiles?: string[];
@@ -29,7 +29,7 @@ const DURATION_OPTIONS: DurationOption[] = [
 ];
 
 export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
-  const { exit } = useApp();
+  const renderer = useRenderer();
   
   // State machine: 0=topic, 1=audience_level, 2=audience_stack, 3=duration, 4=confirm
   const [step, setStep] = useState(0);
@@ -44,81 +44,70 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
   const [inputValue, setInputValue] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Step 0: Topic (text input)
-  useInput((input, key) => {
+  // Handle keyboard input for all steps
+  useKeyboard((key) => {
+    // Step 0: Topic (text input)
     if (step === 0) {
-      if (key.return) {
+      if (key === 'enter') {
         if (inputValue.trim()) {
           setTopic(inputValue.trim());
           setInputValue('');
           setStep(1);
         }
-      } else if (key.backspace || key.delete) {
+      } else if (key === 'backspace') {
         setInputValue([...inputValue].slice(0, -1).join(''));
-      } else if (key.escape) {
-        exit();
-      } else if (!key.ctrl && !key.meta && input) {
-        setInputValue(inputValue + input);
+      } else if (key === 'escape') {
+        renderer.exit();
+      } else if (key.length === 1) {
+        setInputValue(inputValue + key);
       }
     }
-  }, { isActive: step === 0 });
-
-  // Step 1: Audience Level (select)
-  useInput((input, key) => {
-    if (step === 1) {
-      if (key.upArrow) {
+    // Step 1: Audience Level (select)
+    else if (step === 1) {
+      if (key === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : AUDIENCE_LEVELS.length - 1));
-      } else if (key.downArrow) {
+      } else if (key === 'down') {
         setSelectedIndex((prev) => (prev < AUDIENCE_LEVELS.length - 1 ? prev + 1 : 0));
-      } else if (key.return) {
+      } else if (key === 'enter') {
         setAudienceLevel(AUDIENCE_LEVELS[selectedIndex]!);
         setSelectedIndex(0);
         setStep(2);
-      } else if (key.escape) {
-        exit();
+      } else if (key === 'escape') {
+        renderer.exit();
       }
     }
-  }, { isActive: step === 1 });
-
-  // Step 2: Audience Stack (text input, optional)
-  useInput((input, key) => {
-    if (step === 2) {
-      if (key.return) {
+    // Step 2: Audience Stack (text input, optional)
+    else if (step === 2) {
+      if (key === 'enter') {
         setAudienceStack(inputValue.trim());
         setInputValue('');
         setSelectedIndex(0);
         setStep(3);
-      } else if (key.backspace || key.delete) {
+      } else if (key === 'backspace') {
         setInputValue([...inputValue].slice(0, -1).join(''));
-      } else if (key.escape) {
-        exit();
-      } else if (!key.ctrl && !key.meta && input) {
-        setInputValue(inputValue + input);
+      } else if (key === 'escape') {
+        renderer.exit();
+      } else if (key.length === 1) {
+        setInputValue(inputValue + key);
       }
     }
-  }, { isActive: step === 2 });
-
-  // Step 3: Duration (select)
-  useInput((input, key) => {
-    if (step === 3) {
-      if (key.upArrow) {
+    // Step 3: Duration (select)
+    else if (step === 3) {
+      if (key === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : DURATION_OPTIONS.length - 1));
-      } else if (key.downArrow) {
+      } else if (key === 'down') {
         setSelectedIndex((prev) => (prev < DURATION_OPTIONS.length - 1 ? prev + 1 : 0));
-      } else if (key.return) {
+      } else if (key === 'enter') {
         setDuration(DURATION_OPTIONS[selectedIndex]!.minutes);
         setSelectedIndex(0);
         setStep(4);
-      } else if (key.escape) {
-        exit();
+      } else if (key === 'escape') {
+        renderer.exit();
       }
     }
-  }, { isActive: step === 3 });
-
-  // Step 4: Confirm (y/n)
-  useInput((input, key) => {
-    if (step === 4) {
-      if (input === 'y' || input === 'Y') {
+    // Step 4: Confirm (y/n)
+    else if (step === 4) {
+      if (key === 'y' || key === 'Y') {
         onComplete({
           topic,
           audience: {
@@ -128,139 +117,139 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
           duration,
           contextFiles,
         });
-      } else if (input === 'n' || input === 'N') {
-        exit();
-      } else if (key.escape) {
-        exit();
+      } else if (key === 'n' || key === 'N') {
+        renderer.exit();
+      } else if (key === 'escape') {
+        renderer.exit();
       }
     }
-  }, { isActive: step === 4 });
+  });
 
   return (
-    <Box flexDirection="column" padding={1}>
+    <box style={{ flexDirection: 'column', padding: 1 }}>
       {/* Header */}
-      <Box marginBottom={1}>
-        <Text bold color="cyan">
+      <box style={{ marginBottom: 1 }}>
+        <text style={{ fontWeight: 'bold', color: 'cyan' }}>
           Workshop Factory - New Workshop
-        </Text>
-      </Box>
+        </text>
+      </box>
 
       {/* Step indicator */}
-      <Box marginBottom={1}>
-        <Text dimColor>
+      <box style={{ marginBottom: 1 }}>
+        <text style={{ opacity: 0.6 }}>
           Step {step + 1} of 5
-        </Text>
-      </Box>
+        </text>
+      </box>
 
       {/* Step 0: Topic */}
       {step === 0 && (
-        <Box flexDirection="column">
-          <Text color="yellow">What topic should this workshop cover?</Text>
-          <Box marginTop={1}>
-            <Text color="green">&gt; </Text>
-            <Text>{inputValue}</Text>
-            <Text color="cyan">█</Text>
-          </Box>
-        </Box>
+        <box style={{ flexDirection: 'column' }}>
+          <text style={{ color: 'yellow' }}>What topic should this workshop cover?</text>
+          <box style={{ marginTop: 1 }}>
+            <text style={{ color: 'green' }}>&gt; </text>
+            <text>{inputValue}</text>
+            <text style={{ color: 'cyan' }}>█</text>
+          </box>
+        </box>
       )}
 
       {/* Step 1: Audience Level */}
       {step === 1 && (
-        <Box flexDirection="column">
-          <Text color="yellow">Select audience level:</Text>
-          <Box marginTop={1} flexDirection="column">
+        <box style={{ flexDirection: 'column' }}>
+          <text style={{ color: 'yellow' }}>Select audience level:</text>
+          <box style={{ marginTop: 1, flexDirection: 'column' }}>
             {AUDIENCE_LEVELS.map((level, index) => (
-              <Box key={level}>
-                <Text color={index === selectedIndex ? 'green' : 'white'}>
+              <box key={level}>
+                <text style={{ color: index === selectedIndex ? 'green' : 'white' }}>
                   {index === selectedIndex ? '› ' : '  '}
                   {level}
-                </Text>
-              </Box>
+                </text>
+              </box>
             ))}
-          </Box>
-          <Box marginTop={1}>
-            <Text dimColor>Use ↑↓ to navigate, Enter to select</Text>
-          </Box>
-        </Box>
+          </box>
+          <box style={{ marginTop: 1 }}>
+            <text style={{ opacity: 0.6 }}>Use ↑↓ to navigate, Enter to select</text>
+          </box>
+        </box>
       )}
 
       {/* Step 2: Audience Stack */}
       {step === 2 && (
-        <Box flexDirection="column">
-          <Text color="yellow">What technology stack? (optional, press Enter to skip)</Text>
-          <Box marginTop={1}>
-            <Text color="green">&gt; </Text>
-            <Text>{inputValue}</Text>
-            <Text color="cyan">█</Text>
-          </Box>
-        </Box>
+        <box style={{ flexDirection: 'column' }}>
+          <text style={{ color: 'yellow' }}>What technology stack? (optional, press Enter to skip)</text>
+          <box style={{ marginTop: 1 }}>
+            <text style={{ color: 'green' }}>&gt; </text>
+            <text>{inputValue}</text>
+            <text style={{ color: 'cyan' }}>█</text>
+          </box>
+        </box>
       )}
 
       {/* Step 3: Duration */}
       {step === 3 && (
-        <Box flexDirection="column">
-          <Text color="yellow">Select workshop duration:</Text>
-          <Box marginTop={1} flexDirection="column">
+        <box style={{ flexDirection: 'column' }}>
+          <text style={{ color: 'yellow' }}>Select workshop duration:</text>
+          <box style={{ marginTop: 1, flexDirection: 'column' }}>
             {DURATION_OPTIONS.map((option, index) => (
-              <Box key={option.label}>
-                <Text color={index === selectedIndex ? 'green' : 'white'}>
+              <box key={option.label}>
+                <text style={{ color: index === selectedIndex ? 'green' : 'white' }}>
                   {index === selectedIndex ? '› ' : '  '}
                   {option.label}
-                </Text>
-              </Box>
+                </text>
+              </box>
             ))}
-          </Box>
-          <Box marginTop={1}>
-            <Text dimColor>Use ↑↓ to navigate, Enter to select</Text>
-          </Box>
-        </Box>
+          </box>
+          <box style={{ marginTop: 1 }}>
+            <text style={{ opacity: 0.6 }}>Use ↑↓ to navigate, Enter to select</text>
+          </box>
+        </box>
       )}
 
       {/* Step 4: Confirm */}
       {step === 4 && (
-        <Box flexDirection="column">
-          <Text bold color="cyan">
+        <box style={{ flexDirection: 'column' }}>
+          <text style={{ fontWeight: 'bold', color: 'cyan' }}>
             Review your workshop configuration:
-          </Text>
+          </text>
           
-          <Box marginY={1} />
+          <box style={{ marginTop: 1, marginBottom: 1 }} />
           
-          <Box flexDirection="column" paddingLeft={2}>
-            <Box>
-              <Text bold>Topic: </Text>
-              <Text>{topic}</Text>
-            </Box>
-            <Box>
-              <Text bold>Audience: </Text>
-              <Text>{audienceLevel}</Text>
+          <box style={{ flexDirection: 'column', paddingLeft: 2 }}>
+            <box>
+              <text style={{ fontWeight: 'bold' }}>Topic: </text>
+              <text>{topic}</text>
+            </box>
+            <box>
+              <text style={{ fontWeight: 'bold' }}>Audience: </text>
+              <text>{audienceLevel}</text>
               {audienceStack && (
-                <Text> ({audienceStack})</Text>
+                <text> ({audienceStack})</text>
               )}
-            </Box>
-            <Box>
-              <Text bold>Duration: </Text>
-              <Text>{DURATION_OPTIONS.find(d => d.minutes === duration)?.label}</Text>
-            </Box>
+            </box>
+            <box>
+              <text style={{ fontWeight: 'bold' }}>Duration: </text>
+              <text>{DURATION_OPTIONS.find(d => d.minutes === duration)?.label}</text>
+            </box>
             {contextFiles.length > 0 && (
-              <Box flexDirection="column">
-                <Text bold>Context files:</Text>
+              <box style={{ flexDirection: 'column' }}>
+                <text style={{ fontWeight: 'bold' }}>Context files:</text>
                 {contextFiles.map((file) => (
-                  <Text key={file}>  • {file}</Text>
+                  <text key={file}>  • {file}</text>
                 ))}
-              </Box>
+              </box>
             )}
-          </Box>
+          </box>
 
-          <Box>
-            <Text color="yellow">Create this workshop? (y/n): </Text>
-          </Box>
-        </Box>
+          <box>
+            <text style={{ color: 'yellow' }}>Create this workshop? (y/n): </text>
+          </box>
+        </box>
       )}
 
       {/* Footer hint */}
-      <Box marginTop={1}>
-        <Text dimColor>Press ESC to cancel</Text>
-      </Box>
-    </Box>
+      <box style={{ marginTop: 1 }}>
+        <text style={{ opacity: 0.6 }}>Press ESC to cancel</text>
+      </box>
+    </box>
   );
 }
