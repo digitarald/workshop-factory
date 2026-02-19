@@ -10,6 +10,7 @@ import { buildRegenPrompt, getSystemPrompt } from './prompts.js';
 import { getGlobalClient, createSession, sendAndWait } from './client.js';
 import { extractJson } from './extract-json.js';
 import { saveWorkshopTool, loadWorkshopTool, validateStructureTool } from './tools/index.js';
+import { copyFile } from 'node:fs/promises';
 import { dump } from 'js-yaml';
 
 /**
@@ -176,7 +177,14 @@ export async function regenerateWorkshop(options: RegenOptions): Promise<Worksho
     console.warn(`⚠ Only ${updatedCount} of ${sectionsToRegen.length} sections were updated — LLM response may have a different structure`);
   }
 
-  // Step 8: Save the updated workshop
+  // Step 8: Back up original file, then save the updated workshop
+  const backupPath = `${workshopPath}.bak`;
+  try {
+    await copyFile(workshopPath, backupPath);
+    console.log(`Backed up original to ${backupPath}`);
+  } catch (error) {
+    throw new Error(`Failed to create backup of workshop file: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+  }
   console.log(`\nSaving workshop to ${workshopPath}...`);
   await saveWorkshop(workshop, workshopPath);
   console.log('✓ Workshop saved');
