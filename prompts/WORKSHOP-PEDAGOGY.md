@@ -12,17 +12,17 @@
 
 - **Remember**: define, list, identify, recall, name, recognize, state, label
 - **Understand**: explain, describe, summarize, interpret, classify, compare, discuss, paraphrase
-- **Apply**: implement, use, execute, demonstrate, solve, apply, build, operate
-- **Analyze**: differentiate, examine, compare, contrast, debug, test, investigate, categorize
-- **Evaluate**: assess, critique, justify, defend, judge, recommend, prioritize, validate
-- **Create**: design, build, construct, develop, compose, formulate, plan, architect
+- **Apply**: implement, use, execute, demonstrate, solve, apply, build, operate, navigate, craft, practice, calculate, modify, construct, produce, select, show
+- **Analyze**: differentiate, examine, compare, contrast, debug, test, investigate, categorize, diagnose, classify, infer, identify, outline, attribute, organize
+- **Evaluate**: assess, critique, justify, defend, judge, recommend, prioritize, validate, determine, decide, appraise, rank, measure, evaluate
+- **Create**: design, build, construct, develop, compose, formulate, plan, architect, synthesize, generate, hypothesize, engineer
 
 ### Audience Level Requirements
 
 | Audience Level | Minimum Cognitive Levels | Example Objective |
 |-----------|-------------------------|-------------------|
 | **Beginner** | Remember, Understand, Apply | "Implement a basic Docker container", "Explain container lifecycle" |
-| **Intermediate** | Apply, Analyze | "Debug multi-container networking issues", "Compare orchestration strategies" |
+| **Intermediate** | Understand, Apply, Analyze | "Apply container best practices", "Debug multi-container networking issues" |
 | **Advanced** | Analyze, Evaluate, Create | "Design a production-ready deployment pipeline", "Evaluate security trade-offs" |
 
 **Validation**: Every learning objective MUST start with an action verb from the appropriate cognitive level tier.
@@ -88,7 +88,8 @@ For a **120-minute workshop**:
 
 - Track cumulative time across sections
 - When cumulative time reaches 20-25 minutes, insert a checkpoint section
-- Checkpoints should take 3-5 minutes
+- Checkpoints should take **5-7 minutes** (MINIMUM 5 minutes — sections shorter than 5 minutes are invalid)
+- For a 60-minute workshop, ≥15% = at least 9 minutes of checkpoints, so plan at least 2 checkpoint sections
 
 **Example Timeline**:
 ```

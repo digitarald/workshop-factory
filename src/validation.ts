@@ -32,10 +32,10 @@ export interface ValidationResult {
 const BLOOMS_VERBS: Record<BloomsLevel, string[]> = {
   remember: ['define', 'list', 'identify', 'recall', 'name', 'recognize', 'state', 'label'],
   understand: ['explain', 'describe', 'summarize', 'interpret', 'classify', 'compare', 'discuss', 'paraphrase'],
-  apply: ['implement', 'use', 'execute', 'demonstrate', 'solve', 'apply', 'build', 'operate'],
-  analyze: ['differentiate', 'examine', 'compare', 'contrast', 'debug', 'test', 'investigate', 'categorize'],
-  evaluate: ['assess', 'critique', 'justify', 'defend', 'judge', 'recommend', 'prioritize', 'validate'],
-  create: ['design', 'build', 'construct', 'develop', 'compose', 'formulate', 'plan', 'architect'],
+  apply: ['implement', 'use', 'execute', 'demonstrate', 'solve', 'apply', 'build', 'operate', 'navigate', 'craft', 'practice', 'calculate', 'modify', 'construct', 'produce', 'select', 'show'],
+  analyze: ['differentiate', 'examine', 'compare', 'contrast', 'debug', 'test', 'investigate', 'categorize', 'diagnose', 'classify', 'infer', 'identify', 'outline', 'attribute', 'organize'],
+  evaluate: ['assess', 'critique', 'justify', 'defend', 'judge', 'recommend', 'prioritize', 'validate', 'determine', 'decide', 'appraise', 'rank', 'measure', 'evaluate'],
+  create: ['design', 'build', 'construct', 'develop', 'compose', 'formulate', 'plan', 'architect', 'synthesize', 'generate', 'hypothesize', 'engineer'],
 };
 
 /**
@@ -43,7 +43,7 @@ const BLOOMS_VERBS: Record<BloomsLevel, string[]> = {
  */
 const LEVEL_BLOOMS_MAP: Record<'beginner' | 'intermediate' | 'advanced', BloomsLevel[]> = {
   beginner: ['remember', 'understand', 'apply'],
-  intermediate: ['apply', 'analyze'],
+  intermediate: ['understand', 'apply', 'analyze'],
   advanced: ['analyze', 'evaluate', 'create'],
 };
 
