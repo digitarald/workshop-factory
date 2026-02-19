@@ -17,8 +17,8 @@
     "prompts"
   ],
   "scripts": {
-    "build": "tsc --noEmit && bun esbuild.config.js",
-    "build:bundle": "bun esbuild.config.js",
+    "build": "tsc --noEmit && node esbuild.config.js",
+    "build:bundle": "node esbuild.config.js",
     "check": "tsc --noEmit",
     "dev": "tsc --watch --noEmit",
     "lint": "eslint src/",

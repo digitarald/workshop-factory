@@ -15,9 +15,10 @@ No test suite is configured yet.
 
 ## Architecture
 
-**Workshop Factory** is a CLI tool that generates pedagogically structured workshops. It uses **Ink 6** (React for terminals) for TUI and the **GitHub Copilot SDK** for AI generation.
+**Workshop Factory** is a CLI tool that generates pedagogically structured workshops. It uses **OpenTUI** (React for terminals) for TUI and the **GitHub Copilot SDK** for AI generation. The runtime is **Bun** (though Node.js is still supported for build).
 
 Latest Copilot SDK docs: https://github.com/github/copilot-sdk
+Latest OpenTUI docs: https://opentui.com/docs/getting-started
 
 ### Screen Flow
 
@@ -27,7 +28,7 @@ The `workshop new` command renders a React app with screens chained via state ma
 Picker → Wizard → GenerationView → Summary ↔ ExportProgress
 ```
 
-Each screen is an Ink component that calls an `onComplete`/`onAction` callback to trigger the next screen. The parent `App` component holds `screen` state and the accumulated data (`wizardParams` → `workshop`). From Summary, users can export to Markdown (`[e]`) or generate a template repo (`[g]` → ExportProgress). ExportProgress errors route back to Summary with an inline error message.
+Each screen is an OpenTUI/React component that calls an `onComplete`/`onAction` callback to trigger the next screen. The parent `App` component holds `screen` state and the accumulated data (`wizardParams` → `workshop`). From Summary, users can export to Markdown (`[e]`) or generate a template repo (`[g]` → ExportProgress). ExportProgress errors route back to Summary with an inline error message.
 
 ### CLI Commands
 
@@ -85,8 +86,9 @@ Prompt templates in `prompts/` (WORKSHOP-PEDAGOGY.md, WORKSHOP-DESIGN.md, WORKSH
 
 ## Key Conventions
 
-- **ESM with `.js` extensions** — All relative imports must use `.js` extensions (e.g., `import { foo } from './bar.js'`). Required by `"module": "nodenext"` in tsconfig.
-- **Ink 6 built-ins only** — Components use only `Box`, `Text`, `useInput`, `useApp` from `ink`. No third-party Ink component libraries.
+- **ESM with `.js` extensions** — All relative imports must use `.js` extensions (e.g., `import { foo } from './bar.js'`). Required by `"module": "ESNext"` in tsconfig.
+- **OpenTUI for TUI** — Components use `<box>` and `<text>` (lowercase) from `@opentui/react`. Text colors use `fg` prop, bold text uses `attributes="bold"`, dim text uses `attributes="dim"`.
+- **Keyboard handling** — Use `useKeyboard` hook which receives `KeyEvent` objects. Check keys via `event.name` (e.g., `event.name === 'return'` for Enter, `event.name === 'escape'` for Escape).
 - **Resolve paths via `import.meta.url`** — Never use `process.cwd()` or `__dirname` to find package files. Use `fileURLToPath(import.meta.url)` + `dirname()` + `join()`.
 - **Zod schemas are runtime validators** — Used for type inference, YAML validation, and SDK tool parameter validation. When adding new data fields, update the Zod schema in `schema.ts` first.
 - **Strict TypeScript** — `noUncheckedIndexedAccess` is enabled; array/object index access returns `T | undefined` and must be checked.
