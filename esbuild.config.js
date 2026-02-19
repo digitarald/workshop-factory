@@ -1,6 +1,8 @@
 import * as esbuild from 'esbuild';
 
-await esbuild.build({
+const watch = process.argv.includes('--watch');
+
+const config = {
   entryPoints: ['src/index.tsx'],
   bundle: true,
   outfile: 'dist/workshop.js',
@@ -19,6 +21,13 @@ await esbuild.build({
     '@github/copilot-sdk',
     'node:*',
   ],
-});
+};
 
-console.log('✓ Built dist/workshop.js');
+if (watch) {
+  const ctx = await esbuild.context(config);
+  await ctx.watch();
+  console.log('👀 Watching for changes...');
+} else {
+  await esbuild.build(config);
+  console.log('✓ Built dist/workshop.js');
+}
