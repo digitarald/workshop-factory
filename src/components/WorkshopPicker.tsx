@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useKeyboard, useRenderer } from '@opentui/react';
-import { KeyEvent } from '@opentui/core';
+import { KeyEvent, TextAttributes } from '@opentui/core';
 import type { ExistingWorkshop } from '../workshops.js';
 
 export interface WorkshopPickerProps {
@@ -70,7 +70,7 @@ export function WorkshopPicker({
   return (
     <box flexDirection="column" padding={1}>
       <box marginBottom={1}>
-        <text attributes="bold" fg="cyan">Workshop Factory</text>
+        <text attributes={TextAttributes.BOLD} fg="cyan">Workshop Factory</text>
       </box>
 
       <box marginBottom={1}>

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useKeyboard } from '@opentui/react';
-import { KeyEvent } from '@opentui/core';
+import { KeyEvent, TextAttributes } from '@opentui/core';
 import type { Workshop } from '../schema.js';
 
 export interface SummaryProps {
@@ -45,50 +45,50 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
     <box flexDirection="column" paddingX={2} paddingY={1}>
       <box
         flexDirection="column"
-        borderStyle="round"
+        borderStyle="rounded"
         borderColor={saveError ? 'yellow' : 'green'}
         paddingX={2}
         paddingY={1}
       >
         {/* Header */}
         <box justifyContent="center" marginBottom={1}>
-          <text attributes="bold" fg={saveError ? 'yellow' : 'green'}>
+          <text attributes={TextAttributes.BOLD} fg={saveError ? 'yellow' : 'green'}>
             {saveError ? 'Workshop Generated (not saved)' : 'Workshop Created'}
           </text>
         </box>
 
         {/* Title */}
         <box justifyContent="center" marginBottom={1}>
-          <text attributes="bold">📚  {workshop.title}</text>
+          <text attributes={TextAttributes.BOLD}>📚  {workshop.title}</text>
         </box>
 
         {/* Basic Stats */}
         <box flexDirection="column" marginBottom={1}>
           <box>
             <text>Duration:    </text>
-            <text attributes="bold">{stats.totalDuration} min</text>
+            <text attributes={TextAttributes.BOLD}>{stats.totalDuration} min</text>
           </box>
           <box>
             <text>Modules:     </text>
-            <text attributes="bold">{stats.moduleCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.moduleCount}</text>
           </box>
           <box>
             <text>Sections:    </text>
-            <text attributes="bold">{stats.sectionCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.sectionCount}</text>
           </box>
         </box>
 
         {/* Duration Breakdown */}
         <box
           flexDirection="column"
-          borderStyle="round"
+          borderStyle="rounded"
           borderColor="gray"
           paddingX={1}
           paddingY={0}
           marginBottom={1}
         >
           <box>
-            <text attributes="bold">Duration Breakdown</text>
+            <text attributes={TextAttributes.BOLD}>Duration Breakdown</text>
           </box>
           
           {/* Exercises */}
@@ -124,12 +124,12 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         <box flexDirection="column" marginBottom={1}>
           <box>
             <text>Checkpoints:  </text>
-            <text attributes="bold">{stats.checkpointCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.checkpointCount}</text>
             <text> (every ~{stats.avgCheckpointSpacing} min)</text>
           </box>
           <box>
             <text>Exercises:    </text>
-            <text attributes="bold">{stats.exerciseCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.exerciseCount}</text>
             <text> (with starter code + solutions)</text>
           </box>
         </box>
@@ -151,7 +151,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         {/* Validation Warnings */}
         {validationWarnings.length > 0 && (
           <box flexDirection="column" marginBottom={1}>
-            <text fg="yellow" attributes="bold">Validation warnings ({validationWarnings.length}):</text>
+            <text fg="yellow" attributes={TextAttributes.BOLD}>Validation warnings ({validationWarnings.length}):</text>
             {validationWarnings.map((warning, idx) => (
               <text key={idx} fg="yellow">  ✗ {warning}</text>
             ))}
@@ -160,7 +160,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
 
         {/* Next Steps */}
         <box flexDirection="column">
-          <text attributes="bold">Next steps:</text>
+          <text attributes={TextAttributes.BOLD}>Next steps:</text>
           <text>[e] Export to Markdown</text>
           <text>[g] Generate workshop repo</text>
           <text>[v] Validate structure</text>

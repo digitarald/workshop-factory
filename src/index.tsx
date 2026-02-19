@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import React, { useState, useCallback, useEffect } from 'react';
-import { createCliRenderer, KeyEvent } from '@opentui/core';
+import { createCliRenderer, KeyEvent, TextAttributes } from '@opentui/core';
 import { createRoot, useKeyboard } from '@opentui/react';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -165,7 +165,7 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
   if (error) {
     return (
       <box flexDirection="column" padding={1}>
-        <text fg="red" attributes="bold">Error: {error}</text>
+        <text fg="red" attributes={TextAttributes.BOLD}>Error: {error}</text>
         <box marginTop={1} flexDirection="column">
           <text>[r] Back to wizard</text>
           <text>[q] Exit</text>
@@ -289,12 +289,12 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
  * Handler for 'workshop new' command
  */
 async function handleNew(contextFiles?: string[]): Promise<void> {
+  const renderer = await createCliRenderer({ useAlternateScreen: true });
+  const root = createRoot(renderer);
+  root.render(<App contextFiles={contextFiles} />);
+  renderer.start();
+  
   return new Promise<void>((resolve) => {
-    const renderer = createCliRenderer({ useAlternateScreen: true });
-    const root = createRoot(renderer);
-    root.render(<App contextFiles={contextFiles} />);
-    renderer.start();
-    
     // OpenTUI handles the lifecycle — process.exit() in App will terminate
     process.on('exit', () => {
       root.unmount();

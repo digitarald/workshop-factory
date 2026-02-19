@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { TextAttributes } from '@opentui/core';
 import { generateRepo, type GenerateRepoEvent, type RepoPhase } from '../exporters/repo-generate.js';
 import type { Workshop } from '../schema.js';
 
@@ -78,14 +79,14 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
     <box flexDirection="column" paddingX={2} paddingY={1}>
       <box
         flexDirection="column"
-        borderStyle="round"
+        borderStyle="rounded"
         borderColor={done ? 'green' : 'blue'}
         paddingX={2}
         paddingY={1}
       >
         {/* Header */}
         <box justifyContent="center" marginBottom={1}>
-          <text attributes="bold" fg={done ? 'green' : 'blue'}>
+          <text attributes={TextAttributes.BOLD} fg={done ? 'green' : 'blue'}>
             {done ? 'Workshop Repo Generated' : 'Generating Workshop Repo'}
           </text>
         </box>
@@ -112,7 +113,7 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
         {/* Files written */}
         {files.length > 0 && (
           <box flexDirection="column" marginBottom={1}>
-            <text attributes="bold">Files written ({files.length}):</text>
+            <text attributes={TextAttributes.BOLD}>Files written ({files.length}):</text>
             {files.map((file, idx) => (
               <box key={idx}>
                 <text fg="green">  + </text>

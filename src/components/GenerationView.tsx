@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { TextAttributes } from '@opentui/core';
 import type { Workshop, Module } from '../schema.js';
 import type { ValidationResult } from '../validation.js';
 import { WorkshopSchema, ModuleSchema } from '../schema.js';
@@ -285,7 +286,7 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
   return (
     <box flexDirection="column" borderStyle="single" borderColor="cyan" paddingX={2} paddingY={1}>
       {/* Header */}
-      <text attributes="bold" fg="cyan">Generating Workshop</text>
+      <text attributes={TextAttributes.BOLD} fg="cyan">Generating Workshop</text>
 
       <box marginTop={1} flexDirection="column">
         <text>
@@ -299,7 +300,7 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
       {/* Module list */}
       {modules.length > 0 && (
         <box flexDirection="column" marginTop={1}>
-          <text attributes="bold">Modules:</text>
+          <text attributes={TextAttributes.BOLD}>Modules:</text>
           {modules.map((module, idx) => (
             <box key={idx} marginLeft={1}>
               <text fg={module.status === 'complete' ? 'green' : module.status === 'generating' ? 'yellow' : 'gray'}>
@@ -329,7 +330,7 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
       {/* Error display */}
       {phase === 'error' && error && (
         <box marginTop={1} flexDirection="column">
-          <text fg="red" attributes="bold">
+          <text fg="red" attributes={TextAttributes.BOLD}>
             Error: {error.message}
           </text>
         </box>

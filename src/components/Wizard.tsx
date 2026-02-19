@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useKeyboard, useRenderer } from '@opentui/react';
-import { KeyEvent } from '@opentui/core';
+import { KeyEvent, TextAttributes } from '@opentui/core';
 
 interface WizardProps {
   contextFiles?: string[];
@@ -63,8 +63,8 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         setInputValue([...inputValue].slice(0, -1).join(''));
       } else if (event.name === 'escape') {
         exit();
-      } else if (event.key && event.key.length === 1) {
-        setInputValue(inputValue + event.key);
+      } else if (event.sequence && event.sequence.length === 1 && !event.ctrl && !event.meta) {
+        setInputValue(inputValue + event.sequence);
       }
     }
     // Step 1: Audience Level (select)
@@ -92,8 +92,8 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
         setInputValue([...inputValue].slice(0, -1).join(''));
       } else if (event.name === 'escape') {
         exit();
-      } else if (event.key && event.key.length === 1) {
-        setInputValue(inputValue + event.key);
+      } else if (event.sequence && event.sequence.length === 1 && !event.ctrl && !event.meta) {
+        setInputValue(inputValue + event.sequence);
       }
     }
     // Step 3: Duration (select)
@@ -134,7 +134,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
     <box flexDirection="column" padding={1}>
       {/* Header */}
       <box marginBottom={1}>
-        <text attributes="bold" fg="cyan">
+        <text attributes={TextAttributes.BOLD} fg="cyan">
           Workshop Factory - New Workshop
         </text>
       </box>
@@ -213,7 +213,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
       {/* Step 4: Confirm */}
       {step === 4 && (
         <box flexDirection="column">
-          <text attributes="bold" fg="cyan">
+          <text attributes={TextAttributes.BOLD} fg="cyan">
             Review your workshop configuration:
           </text>
           
@@ -221,23 +221,23 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
           
           <box flexDirection="column" paddingLeft={2}>
             <box>
-              <text attributes="bold">Topic: </text>
+              <text attributes={TextAttributes.BOLD}>Topic: </text>
               <text>{topic}</text>
             </box>
             <box>
-              <text attributes="bold">Audience: </text>
+              <text attributes={TextAttributes.BOLD}>Audience: </text>
               <text>{audienceLevel}</text>
               {audienceStack && (
                 <text> ({audienceStack})</text>
               )}
             </box>
             <box>
-              <text attributes="bold">Duration: </text>
+              <text attributes={TextAttributes.BOLD}>Duration: </text>
               <text>{DURATION_OPTIONS.find(d => d.minutes === duration)?.label}</text>
             </box>
             {contextFiles.length > 0 && (
               <box flexDirection="column">
-                <text attributes="bold">Context files:</text>
+                <text attributes={TextAttributes.BOLD}>Context files:</text>
                 {contextFiles.map((file) => (
                   <text key={file}>  • {file}</text>
                 ))}
