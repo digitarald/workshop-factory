@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { useKeyboard } from '@opentui/react';
+import { KeyEvent, TextAttributes } from '@opentui/core';
 import type { Workshop } from '../schema.js';
 
 export interface SummaryProps {
@@ -22,7 +23,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
   const actionInFlight = useRef(false);
 
   // Handle keyboard input
-  useInput((input) => {
+  useKeyboard((event: KeyEvent) => {
     if (actionInFlight.current) return;
 
     const actionMap: Record<string, 'export-md' | 'generate-repo' | 'validate' | 'exit'> = {
@@ -31,7 +32,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
       v: 'validate',
       q: 'exit',
     };
-    const action = actionMap[input.toLowerCase()];
+    const action = event.name ? actionMap[event.name.toLowerCase()] : undefined;
     if (!action) return;
 
     actionInFlight.current = true;
@@ -41,132 +42,132 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
   });
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1}>
-      <Box
+    <box flexDirection="column" paddingX={2} paddingY={1}>
+      <box
         flexDirection="column"
-        borderStyle="round"
+        borderStyle="rounded"
         borderColor={saveError ? 'yellow' : 'green'}
         paddingX={2}
         paddingY={1}
       >
         {/* Header */}
-        <Box justifyContent="center" marginBottom={1}>
-          <Text bold color={saveError ? 'yellow' : 'green'}>
+        <box justifyContent="center" marginBottom={1}>
+          <text attributes={TextAttributes.BOLD} fg={saveError ? 'yellow' : 'green'}>
             {saveError ? 'Workshop Generated (not saved)' : 'Workshop Created'}
-          </Text>
-        </Box>
+          </text>
+        </box>
 
         {/* Title */}
-        <Box justifyContent="center" marginBottom={1}>
-          <Text bold>📚  {workshop.title}</Text>
-        </Box>
+        <box justifyContent="center" marginBottom={1}>
+          <text attributes={TextAttributes.BOLD}>📚  {workshop.title}</text>
+        </box>
 
         {/* Basic Stats */}
-        <Box flexDirection="column" marginBottom={1}>
-          <Box>
-            <Text>Duration:    </Text>
-            <Text bold>{stats.totalDuration} min</Text>
-          </Box>
-          <Box>
-            <Text>Modules:     </Text>
-            <Text bold>{stats.moduleCount}</Text>
-          </Box>
-          <Box>
-            <Text>Sections:    </Text>
-            <Text bold>{stats.sectionCount}</Text>
-          </Box>
-        </Box>
+        <box flexDirection="column" marginBottom={1}>
+          <box>
+            <text>Duration:    </text>
+            <text attributes={TextAttributes.BOLD}>{stats.totalDuration} min</text>
+          </box>
+          <box>
+            <text>Modules:     </text>
+            <text attributes={TextAttributes.BOLD}>{stats.moduleCount}</text>
+          </box>
+          <box>
+            <text>Sections:    </text>
+            <text attributes={TextAttributes.BOLD}>{stats.sectionCount}</text>
+          </box>
+        </box>
 
         {/* Duration Breakdown */}
-        <Box
+        <box
           flexDirection="column"
-          borderStyle="round"
+          borderStyle="rounded"
           borderColor="gray"
           paddingX={1}
           paddingY={0}
           marginBottom={1}
         >
-          <Box>
-            <Text bold>Duration Breakdown</Text>
-          </Box>
+          <box>
+            <text attributes={TextAttributes.BOLD}>Duration Breakdown</text>
+          </box>
           
           {/* Exercises */}
-          <Box>
-            <Text>Exercises:    </Text>
-            <Text>{String(stats.exerciseDuration).padStart(2, ' ')} min ({stats.exercisePercent}%)  </Text>
-            <Text>{renderBar(stats.exercisePercent)}</Text>
-          </Box>
+          <box>
+            <text>Exercises:    </text>
+            <text>{String(stats.exerciseDuration).padStart(2, ' ')} min ({stats.exercisePercent}%)  </text>
+            <text>{renderBar(stats.exercisePercent)}</text>
+          </box>
 
           {/* Lectures */}
-          <Box>
-            <Text>Lectures:     </Text>
-            <Text>{String(stats.lectureDuration).padStart(2, ' ')} min ({stats.lecturePercent}%)  </Text>
-            <Text>{renderBar(stats.lecturePercent)}</Text>
-          </Box>
+          <box>
+            <text>Lectures:     </text>
+            <text>{String(stats.lectureDuration).padStart(2, ' ')} min ({stats.lecturePercent}%)  </text>
+            <text>{renderBar(stats.lecturePercent)}</text>
+          </box>
 
           {/* Discussions */}
-          <Box>
-            <Text>Discussions:  </Text>
-            <Text>{String(stats.discussionDuration).padStart(2, ' ')} min ({stats.discussionPercent}%)  </Text>
-            <Text>{renderBar(stats.discussionPercent)}</Text>
-          </Box>
+          <box>
+            <text>Discussions:  </text>
+            <text>{String(stats.discussionDuration).padStart(2, ' ')} min ({stats.discussionPercent}%)  </text>
+            <text>{renderBar(stats.discussionPercent)}</text>
+          </box>
 
           {/* Checkpoints */}
-          <Box>
-            <Text>Checkpoints:  </Text>
-            <Text>{String(stats.checkpointDuration).padStart(2, ' ')} min ({stats.checkpointPercent}%)  </Text>
-            <Text>{renderBar(stats.checkpointPercent)}</Text>
-          </Box>
-        </Box>
+          <box>
+            <text>Checkpoints:  </text>
+            <text>{String(stats.checkpointDuration).padStart(2, ' ')} min ({stats.checkpointPercent}%)  </text>
+            <text>{renderBar(stats.checkpointPercent)}</text>
+          </box>
+        </box>
 
         {/* Additional Stats */}
-        <Box flexDirection="column" marginBottom={1}>
-          <Box>
-            <Text>Checkpoints:  </Text>
-            <Text bold>{stats.checkpointCount}</Text>
-            <Text> (every ~{stats.avgCheckpointSpacing} min)</Text>
-          </Box>
-          <Box>
-            <Text>Exercises:    </Text>
-            <Text bold>{stats.exerciseCount}</Text>
-            <Text> (with starter code + solutions)</Text>
-          </Box>
-        </Box>
+        <box flexDirection="column" marginBottom={1}>
+          <box>
+            <text>Checkpoints:  </text>
+            <text attributes={TextAttributes.BOLD}>{stats.checkpointCount}</text>
+            <text> (every ~{stats.avgCheckpointSpacing} min)</text>
+          </box>
+          <box>
+            <text>Exercises:    </text>
+            <text attributes={TextAttributes.BOLD}>{stats.exerciseCount}</text>
+            <text> (with starter code + solutions)</text>
+          </box>
+        </box>
 
         {/* Save Path */}
         {saveError ? (
-          <Box flexDirection="column" marginBottom={1}>
-            <Text color="red">Save failed: {saveError}</Text>
-            <Text dimColor>  Target: {savePath}</Text>
-            <Text dimColor>  Use [e] or [g] to export from memory</Text>
-          </Box>
+          <box flexDirection="column" marginBottom={1}>
+            <text fg="red">Save failed: {saveError}</text>
+            <text opacity={0.5}>  Target: {savePath}</text>
+            <text opacity={0.5}>  Use [e] or [g] to export from memory</text>
+          </box>
         ) : (
-          <Box marginBottom={1}>
-            <Text>Saved to: </Text>
-            <Text color="cyan">{savePath}</Text>
-          </Box>
+          <box marginBottom={1}>
+            <text>Saved to: </text>
+            <text fg="cyan">{savePath}</text>
+          </box>
         )}
 
         {/* Validation Warnings */}
         {validationWarnings.length > 0 && (
-          <Box flexDirection="column" marginBottom={1}>
-            <Text color="yellow" bold>Validation warnings ({validationWarnings.length}):</Text>
+          <box flexDirection="column" marginBottom={1}>
+            <text fg="yellow" attributes={TextAttributes.BOLD}>Validation warnings ({validationWarnings.length}):</text>
             {validationWarnings.map((warning, idx) => (
-              <Text key={idx} color="yellow">  ✗ {warning}</Text>
+              <text key={idx} fg="yellow">  ✗ {warning}</text>
             ))}
-          </Box>
+          </box>
         )}
 
         {/* Next Steps */}
-        <Box flexDirection="column">
-          <Text bold>Next steps:</Text>
-          <Text>[e] Export to Markdown</Text>
-          <Text>[g] Generate workshop repo</Text>
-          <Text>[v] Validate structure</Text>
-          <Text>[q] Exit</Text>
-        </Box>
-      </Box>
-    </Box>
+        <box flexDirection="column">
+          <text attributes={TextAttributes.BOLD}>Next steps:</text>
+          <text>[e] Export to Markdown</text>
+          <text>[g] Generate workshop repo</text>
+          <text>[v] Validate structure</text>
+          <text>[q] Exit</text>
+        </box>
+      </box>
+    </box>
   );
 }
 

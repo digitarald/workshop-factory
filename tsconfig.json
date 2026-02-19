@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "jsxImportSource": "react",
+    "jsxImportSource": "@opentui/react",
+    "lib": ["ESNext", "DOM"],
     "rootDir": "./src",
     "strict": true,
     "noUncheckedIndexedAccess": true,

@@ -19,7 +19,7 @@ No test suite is configured yet.
 
 ## Architecture
 
-**Workshop Factory** is a CLI tool that generates pedagogically structured workshops. It uses **Ink 6** (React for terminals) for TUI and the **GitHub Copilot SDK** for AI generation.
+**Workshop Factory** is a CLI tool that generates pedagogically structured workshops. It uses **OpenTUI** (React for terminals) for TUI and the **GitHub Copilot SDK** for AI generation.
 
 ### Screen Flow
 
@@ -29,7 +29,7 @@ The `workshop new` command renders a React app with screens chained via state ma
 Picker → Wizard → GenerationView → Summary ↔ ExportProgress
 ```
 
-Each screen is an Ink component that calls an `onComplete`/`onAction` callback to trigger the next screen. The parent `App` component holds `screen` state and the accumulated data (`wizardParams` → `workshop`). From Summary, users can export to Markdown (`[e]`) or generate a template repo (`[g]` → ExportProgress). ExportProgress errors route back to Summary with an inline error message.
+Each screen is an OpenTUI component that calls an `onComplete`/`onAction` callback to trigger the next screen. The parent `App` component holds `screen` state and the accumulated data (`wizardParams` → `workshop`). From Summary, users can export to Markdown (`[e]`) or generate a template repo (`[g]` → ExportProgress). ExportProgress errors route back to Summary with an inline error message.
 
 ### CLI Commands
 
@@ -81,14 +81,14 @@ The `writeFile` tool (`src/tools/writeFile.ts`) is special — it's instantiated
 
 ### Build Pipeline
 
-esbuild bundles `src/index.tsx` into a single `dist/workshop.js` file. External deps (`ink`, `react`, `@github/copilot-sdk`) are not bundled — they resolve from `node_modules` at runtime. TypeScript compilation (`tsc --noEmit`) is used only for type checking, not code generation.
+esbuild bundles `src/index.tsx` into a single `dist/workshop.js` file. External deps (`@opentui/core`, `@opentui/react`, `react`, `@github/copilot-sdk`) are not bundled — they resolve from `node_modules` at runtime. TypeScript compilation (`tsc --noEmit`) is used only for type checking, not code generation.
 
 Prompt templates in `prompts/` (WORKSHOP-PEDAGOGY.md, WORKSHOP-DESIGN.md, WORKSHOP-SCAFFOLD.md, WORKSHOP-README.md) are **not bundled** — they ship as-is via `"files": ["dist", "prompts"]` in package.json and are read at runtime.
 
 ## Key Conventions
 
 - **ESM with `.js` extensions** — All relative imports must use `.js` extensions (e.g., `import { foo } from './bar.js'`). Required by `"module": "nodenext"` in tsconfig.
-- **Ink 6 built-ins only** — Components use only `Box`, `Text`, `useInput`, `useApp` from `ink`. No third-party Ink component libraries.
+- **OpenTUI components** — Components use lowercase `<box>` and `<text>` tags. Text colors via `fg` prop, bold via `attributes="bold"`, dim text via `opacity={0.5}`. Keyboard events via `useKeyboard` with `KeyEvent.name` checks.
 - **Resolve paths via `import.meta.url`** — Never use `process.cwd()` or `__dirname` to find package files. Use `fileURLToPath(import.meta.url)` + `dirname()` + `join()`.
 - **Zod schemas are runtime validators** — Used for type inference, YAML validation, and SDK tool parameter validation. When adding new data fields, update the Zod schema in `schema.ts` first.
 - **Strict TypeScript** — `noUncheckedIndexedAccess` is enabled; array/object index access returns `T | undefined` and must be checked.
