@@ -26,7 +26,7 @@ type ValidateStructureParams = z.infer<typeof ValidateStructureParamsSchema>;
  */
 export const validateStructureTool = registerTool<ValidateStructureParams>(
   'validate_structure',
-  'Validate workshop structure and pedagogical rules',
+  'Check for structural drift and enforce pedagogical constraints',
   zodToSDKSchema(ValidateStructureParamsSchema),
   async (params) => {
     const parsed = ValidateStructureParamsSchema.safeParse(params);
@@ -39,13 +39,18 @@ export const validateStructureTool = registerTool<ValidateStructureParams>(
     const { workshop } = parsed.data;
     try {
       const result = await validateWorkshopAsync(workshop);
+      const errors = result.checks.filter(c => !c.passed && c.severity === 'error').length;
+      const suggestions = result.checks.filter(c => !c.passed && c.severity === 'suggestion').length;
+      const total = result.checks.length;
+      const parts: string[] = [`${total} constraints checked`];
+      if (errors > 0) parts.push(`${errors} error${errors === 1 ? '' : 's'}`);
+      if (suggestions > 0) parts.push(`${suggestions} suggestion${suggestions === 1 ? '' : 's'}`);
+      if (errors === 0 && suggestions === 0) parts.push('all passed');
       return {
         success: true,
         valid: result.valid,
         checks: result.checks,
-        summary: result.valid
-          ? 'Workshop passed all validation checks'
-          : `Workshop failed ${result.checks.filter((c) => !c.passed).length} validation check(s)`,
+        summary: parts.join(', ') + ' — human review recommended',
       };
     } catch (error) {
       return {

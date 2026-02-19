@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { loadWorkshop, saveWorkshop } from './storage.js';
-import { validateWorkshop } from './validation.js';
+import { validateWorkshop, formatValidationOutput } from './validation.js';
 import { exportToMarkdownFile } from './exporters/markdown.js';
 import { regenerateWorkshop } from './regen.js';
 import { shutdown } from './client.js';
@@ -246,9 +246,7 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
               const result = validateWorkshop(workshop);
               const warnings = result.checks.filter(c => !c.passed).map(c => c.message);
               setValidationWarnings(warnings);
-              for (const check of result.checks) {
-                console.log(`${check.passed ? '✓' : '✗'} ${check.message}`);
-              }
+              console.log(formatValidationOutput(result, workshop.title));
             } else if (action === 'exit') {
               await shutdown();
               process.exit(0);
@@ -313,21 +311,8 @@ async function handleRegen(
     });
     
     // Print validation results after regeneration
-    console.log('\n--- Validation Summary ---');
     const result = validateWorkshop(workshop);
-    
-    for (const check of result.checks) {
-      const icon = check.passed ? '✓' : '✗';
-      console.log(`${icon} ${check.message}`);
-    }
-    
-    console.log('');
-    if (result.valid) {
-      console.log('✓ Regeneration complete. Workshop passed all validation checks.');
-    } else {
-      const failedCount = result.checks.filter(c => !c.passed).length;
-      console.log(`⚠ Regeneration complete, but workshop has ${failedCount} validation issue(s).`);
-    }
+    console.log('\n' + formatValidationOutput(result, workshop.title));
   } finally {
     await shutdown();
   }
@@ -357,22 +342,12 @@ async function handleValidate(file: string): Promise<void> {
   console.log(`Loading workshop from ${file}...`);
   const workshop = await loadWorkshop(file);
   
-  console.log('Validating workshop structure...\n');
   const result = validateWorkshop(workshop);
+  console.log(formatValidationOutput(result, workshop.title));
   
-  // Print results
-  for (const check of result.checks) {
-    const icon = check.passed ? '✓' : '✗';
-    console.log(`${icon} ${check.message}`);
-  }
-  
-  console.log('');
   if (result.valid) {
-    console.log('✓ Workshop passed all validation checks');
     process.exit(0);
   } else {
-    const failedCount = result.checks.filter(c => !c.passed).length;
-    console.log(`✗ Workshop failed ${failedCount} validation check(s)`);
     process.exit(1);
   }
 }
