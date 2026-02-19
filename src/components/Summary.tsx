@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { useKeyboard, KeyEvent } from '@opentui/react';
 import type { Workshop } from '../schema.js';
 
 export interface SummaryProps {
@@ -22,7 +22,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
   const actionInFlight = useRef(false);
 
   // Handle keyboard input
-  useInput((input) => {
+  useKeyboard((event: KeyEvent) => {
     if (actionInFlight.current) return;
 
     const actionMap: Record<string, 'export-md' | 'generate-repo' | 'validate' | 'exit'> = {
@@ -31,7 +31,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
       v: 'validate',
       q: 'exit',
     };
-    const action = actionMap[input.toLowerCase()];
+    const action = event.name ? actionMap[event.name.toLowerCase()] : undefined;
     if (!action) return;
 
     actionInFlight.current = true;
@@ -41,7 +41,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
   });
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1}>
+    <box flexDirection="column" paddingX={2} paddingY={1}>
       <Box
         flexDirection="column"
         borderStyle="round"
@@ -50,32 +50,32 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         paddingY={1}
       >
         {/* Header */}
-        <Box justifyContent="center" marginBottom={1}>
-          <Text bold color={saveError ? 'yellow' : 'green'}>
+        <box justifyContent="center" marginBottom={1}>
+          <text attributes="bold" fg={saveError ? 'yellow' : 'green'}>
             {saveError ? 'Workshop Generated (not saved)' : 'Workshop Created'}
-          </Text>
-        </Box>
+          </text>
+        </box>
 
         {/* Title */}
-        <Box justifyContent="center" marginBottom={1}>
-          <Text bold>📚  {workshop.title}</Text>
-        </Box>
+        <box justifyContent="center" marginBottom={1}>
+          <text attributes="bold">📚  {workshop.title}</text>
+        </box>
 
         {/* Basic Stats */}
-        <Box flexDirection="column" marginBottom={1}>
+        <box flexDirection="column" marginBottom={1}>
           <Box>
-            <Text>Duration:    </Text>
-            <Text bold>{stats.totalDuration} min</Text>
-          </Box>
+            <Text>Duration:    </text>
+            <text attributes="bold">{stats.totalDuration} min</text>
+          </box>
           <Box>
-            <Text>Modules:     </Text>
-            <Text bold>{stats.moduleCount}</Text>
-          </Box>
+            <Text>Modules:     </text>
+            <text attributes="bold">{stats.moduleCount}</text>
+          </box>
           <Box>
-            <Text>Sections:    </Text>
-            <Text bold>{stats.sectionCount}</Text>
-          </Box>
-        </Box>
+            <Text>Sections:    </text>
+            <text attributes="bold">{stats.sectionCount}</text>
+          </box>
+        </box>
 
         {/* Duration Breakdown */}
         <Box
@@ -87,86 +87,86 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
           marginBottom={1}
         >
           <Box>
-            <Text bold>Duration Breakdown</Text>
-          </Box>
+            <text attributes="bold">Duration Breakdown</text>
+          </box>
           
           {/* Exercises */}
           <Box>
-            <Text>Exercises:    </Text>
-            <Text>{String(stats.exerciseDuration).padStart(2, ' ')} min ({stats.exercisePercent}%)  </Text>
-            <Text>{renderBar(stats.exercisePercent)}</Text>
-          </Box>
+            <Text>Exercises:    </text>
+            <Text>{String(stats.exerciseDuration).padStart(2, ' ')} min ({stats.exercisePercent}%)  </text>
+            <Text>{renderBar(stats.exercisePercent)}</text>
+          </box>
 
           {/* Lectures */}
           <Box>
-            <Text>Lectures:     </Text>
-            <Text>{String(stats.lectureDuration).padStart(2, ' ')} min ({stats.lecturePercent}%)  </Text>
-            <Text>{renderBar(stats.lecturePercent)}</Text>
-          </Box>
+            <Text>Lectures:     </text>
+            <Text>{String(stats.lectureDuration).padStart(2, ' ')} min ({stats.lecturePercent}%)  </text>
+            <Text>{renderBar(stats.lecturePercent)}</text>
+          </box>
 
           {/* Discussions */}
           <Box>
-            <Text>Discussions:  </Text>
-            <Text>{String(stats.discussionDuration).padStart(2, ' ')} min ({stats.discussionPercent}%)  </Text>
-            <Text>{renderBar(stats.discussionPercent)}</Text>
-          </Box>
+            <Text>Discussions:  </text>
+            <Text>{String(stats.discussionDuration).padStart(2, ' ')} min ({stats.discussionPercent}%)  </text>
+            <Text>{renderBar(stats.discussionPercent)}</text>
+          </box>
 
           {/* Checkpoints */}
           <Box>
-            <Text>Checkpoints:  </Text>
-            <Text>{String(stats.checkpointDuration).padStart(2, ' ')} min ({stats.checkpointPercent}%)  </Text>
-            <Text>{renderBar(stats.checkpointPercent)}</Text>
-          </Box>
-        </Box>
+            <Text>Checkpoints:  </text>
+            <Text>{String(stats.checkpointDuration).padStart(2, ' ')} min ({stats.checkpointPercent}%)  </text>
+            <Text>{renderBar(stats.checkpointPercent)}</text>
+          </box>
+        </box>
 
         {/* Additional Stats */}
-        <Box flexDirection="column" marginBottom={1}>
+        <box flexDirection="column" marginBottom={1}>
           <Box>
-            <Text>Checkpoints:  </Text>
-            <Text bold>{stats.checkpointCount}</Text>
-            <Text> (every ~{stats.avgCheckpointSpacing} min)</Text>
-          </Box>
+            <Text>Checkpoints:  </text>
+            <text attributes="bold">{stats.checkpointCount}</text>
+            <Text> (every ~{stats.avgCheckpointSpacing} min)</text>
+          </box>
           <Box>
-            <Text>Exercises:    </Text>
-            <Text bold>{stats.exerciseCount}</Text>
-            <Text> (with starter code + solutions)</Text>
-          </Box>
-        </Box>
+            <Text>Exercises:    </text>
+            <text attributes="bold">{stats.exerciseCount}</text>
+            <Text> (with starter code + solutions)</text>
+          </box>
+        </box>
 
         {/* Save Path */}
         {saveError ? (
-          <Box flexDirection="column" marginBottom={1}>
-            <Text color="red">Save failed: {saveError}</Text>
-            <Text dimColor>  Target: {savePath}</Text>
-            <Text dimColor>  Use [e] or [g] to export from memory</Text>
-          </Box>
+          <box flexDirection="column" marginBottom={1}>
+            <text fg="red">Save failed: {saveError}</text>
+            <text opacity={0.5}>  Target: {savePath}</text>
+            <text opacity={0.5}>  Use [e] or [g] to export from memory</text>
+          </box>
         ) : (
-          <Box marginBottom={1}>
-            <Text>Saved to: </Text>
-            <Text color="cyan">{savePath}</Text>
-          </Box>
+          <box marginBottom={1}>
+            <Text>Saved to: </text>
+            <text fg="cyan">{savePath}</text>
+          </box>
         )}
 
         {/* Validation Warnings */}
         {validationWarnings.length > 0 && (
-          <Box flexDirection="column" marginBottom={1}>
-            <Text color="yellow" bold>Validation warnings ({validationWarnings.length}):</Text>
+          <box flexDirection="column" marginBottom={1}>
+            <text fg="yellow" attributes="bold">Validation warnings ({validationWarnings.length}):</text>
             {validationWarnings.map((warning, idx) => (
-              <Text key={idx} color="yellow">  ✗ {warning}</Text>
+              <text key={idx} fg="yellow">  ✗ {warning}</text>
             ))}
-          </Box>
+          </box>
         )}
 
         {/* Next Steps */}
-        <Box flexDirection="column">
-          <Text bold>Next steps:</Text>
-          <Text>[e] Export to Markdown</Text>
-          <Text>[g] Generate workshop repo</Text>
-          <Text>[v] Validate structure</Text>
-          <Text>[q] Exit</Text>
-        </Box>
-      </Box>
-    </Box>
+        <box flexDirection="column">
+          <text attributes="bold">Next steps:</text>
+          <Text>[e] Export to Markdown</text>
+          <Text>[g] Generate workshop repo</text>
+          <Text>[v] Validate structure</text>
+          <Text>[q] Exit</text>
+        </box>
+      </box>
+    </box>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import { useKeyboard, KeyEvent, useRenderer } from '@opentui/react';
 
 interface WizardProps {
   contextFiles?: string[];
@@ -29,7 +29,11 @@ const DURATION_OPTIONS: DurationOption[] = [
 ];
 
 export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
-  const { exit } = useApp();
+  const renderer = useRenderer();
+  const exit = () => {
+    renderer.stop();
+    process.exit(0);
+  };
   
   // State machine: 0=topic, 1=audience_level, 2=audience_stack, 3=duration, 4=confirm
   const [step, setStep] = useState(0);
@@ -45,80 +49,80 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   // Step 0: Topic (text input)
-  useInput((input, key) => {
+  useKeyboard((event: KeyEvent) => {
     if (step === 0) {
-      if (key.return) {
+      if (event.name === 'return') {
         if (inputValue.trim()) {
           setTopic(inputValue.trim());
           setInputValue('');
           setStep(1);
         }
-      } else if (key.backspace || key.delete) {
+      } else if (event.name === 'backspace' || event.name === 'delete') {
         setInputValue([...inputValue].slice(0, -1).join(''));
-      } else if (key.escape) {
+      } else if (event.name === 'escape') {
         exit();
-      } else if (!key.ctrl && !key.meta && input) {
-        setInputValue(inputValue + input);
+      } else if (event.key && event.key.length === 1) {
+        setInputValue(inputValue + event.key);
       }
     }
   }, { isActive: step === 0 });
 
   // Step 1: Audience Level (select)
-  useInput((input, key) => {
+  useKeyboard((event: KeyEvent) => {
     if (step === 1) {
-      if (key.upArrow) {
+      if (event.name === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : AUDIENCE_LEVELS.length - 1));
-      } else if (key.downArrow) {
+      } else if (event.name === 'down') {
         setSelectedIndex((prev) => (prev < AUDIENCE_LEVELS.length - 1 ? prev + 1 : 0));
-      } else if (key.return) {
+      } else if (event.name === 'return') {
         setAudienceLevel(AUDIENCE_LEVELS[selectedIndex]!);
         setSelectedIndex(0);
         setStep(2);
-      } else if (key.escape) {
+      } else if (event.name === 'escape') {
         exit();
       }
     }
   }, { isActive: step === 1 });
 
   // Step 2: Audience Stack (text input, optional)
-  useInput((input, key) => {
+  useKeyboard((event: KeyEvent) => {
     if (step === 2) {
-      if (key.return) {
+      if (event.name === 'return') {
         setAudienceStack(inputValue.trim());
         setInputValue('');
         setSelectedIndex(0);
         setStep(3);
-      } else if (key.backspace || key.delete) {
+      } else if (event.name === 'backspace' || event.name === 'delete') {
         setInputValue([...inputValue].slice(0, -1).join(''));
-      } else if (key.escape) {
+      } else if (event.name === 'escape') {
         exit();
-      } else if (!key.ctrl && !key.meta && input) {
-        setInputValue(inputValue + input);
+      } else if (event.key && event.key.length === 1) {
+        setInputValue(inputValue + event.key);
       }
     }
   }, { isActive: step === 2 });
 
   // Step 3: Duration (select)
-  useInput((input, key) => {
+  useKeyboard((event: KeyEvent) => {
     if (step === 3) {
-      if (key.upArrow) {
+      if (event.name === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : DURATION_OPTIONS.length - 1));
-      } else if (key.downArrow) {
+      } else if (event.name === 'down') {
         setSelectedIndex((prev) => (prev < DURATION_OPTIONS.length - 1 ? prev + 1 : 0));
-      } else if (key.return) {
+      } else if (event.name === 'return') {
         setDuration(DURATION_OPTIONS[selectedIndex]!.minutes);
         setSelectedIndex(0);
         setStep(4);
-      } else if (key.escape) {
+      } else if (event.name === 'escape') {
         exit();
       }
     }
   }, { isActive: step === 3 });
 
   // Step 4: Confirm (y/n)
-  useInput((input, key) => {
+  useKeyboard((event: KeyEvent) => {
     if (step === 4) {
-      if (input === 'y' || input === 'Y') {
+      if (event.name === 'y' || event.name === 'Y') {
         onComplete({
           topic,
           audience: {
@@ -128,139 +132,139 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
           duration,
           contextFiles,
         });
-      } else if (input === 'n' || input === 'N') {
+      } else if (event.name === 'n' || event.name === 'N') {
         exit();
-      } else if (key.escape) {
+      } else if (event.name === 'escape') {
         exit();
       }
     }
   }, { isActive: step === 4 });
 
   return (
-    <Box flexDirection="column" padding={1}>
+    <box flexDirection="column" padding={1}>
       {/* Header */}
-      <Box marginBottom={1}>
-        <Text bold color="cyan">
+      <box marginBottom={1}>
+        <text attributes="bold" fg="cyan">
           Workshop Factory - New Workshop
-        </Text>
-      </Box>
+        </text>
+      </box>
 
       {/* Step indicator */}
-      <Box marginBottom={1}>
-        <Text dimColor>
+      <box marginBottom={1}>
+        <text opacity={0.5}>
           Step {step + 1} of 5
-        </Text>
-      </Box>
+        </text>
+      </box>
 
       {/* Step 0: Topic */}
       {step === 0 && (
-        <Box flexDirection="column">
-          <Text color="yellow">What topic should this workshop cover?</Text>
-          <Box marginTop={1}>
-            <Text color="green">&gt; </Text>
-            <Text>{inputValue}</Text>
-            <Text color="cyan">█</Text>
-          </Box>
-        </Box>
+        <box flexDirection="column">
+          <text fg="yellow">What topic should this workshop cover?</text>
+          <box marginTop={1}>
+            <text fg="green">&gt; </text>
+            <text>{inputValue}</text>
+            <text fg="cyan">█</text>
+          </box>
+        </box>
       )}
 
       {/* Step 1: Audience Level */}
       {step === 1 && (
-        <Box flexDirection="column">
-          <Text color="yellow">Select audience level:</Text>
-          <Box marginTop={1} flexDirection="column">
+        <box flexDirection="column">
+          <text fg="yellow">Select audience level:</text>
+          <box marginTop={1} flexDirection="column">
             {AUDIENCE_LEVELS.map((level, index) => (
-              <Box key={level}>
-                <Text color={index === selectedIndex ? 'green' : 'white'}>
+              <box key={level}>
+                <text fg={index === selectedIndex ? 'green' : 'white'}>
                   {index === selectedIndex ? '› ' : '  '}
                   {level}
-                </Text>
-              </Box>
+                </text>
+              </box>
             ))}
-          </Box>
-          <Box marginTop={1}>
-            <Text dimColor>Use ↑↓ to navigate, Enter to select</Text>
-          </Box>
-        </Box>
+          </box>
+          <box marginTop={1}>
+            <text opacity={0.5}>Use ↑↓ to navigate, Enter to select</text>
+          </box>
+        </box>
       )}
 
       {/* Step 2: Audience Stack */}
       {step === 2 && (
-        <Box flexDirection="column">
-          <Text color="yellow">What technology stack? (optional, press Enter to skip)</Text>
-          <Box marginTop={1}>
-            <Text color="green">&gt; </Text>
-            <Text>{inputValue}</Text>
-            <Text color="cyan">█</Text>
-          </Box>
-        </Box>
+        <box flexDirection="column">
+          <text fg="yellow">What technology stack? (optional, press Enter to skip)</text>
+          <box marginTop={1}>
+            <text fg="green">&gt; </text>
+            <text>{inputValue}</text>
+            <text fg="cyan">█</text>
+          </box>
+        </box>
       )}
 
       {/* Step 3: Duration */}
       {step === 3 && (
-        <Box flexDirection="column">
-          <Text color="yellow">Select workshop duration:</Text>
-          <Box marginTop={1} flexDirection="column">
+        <box flexDirection="column">
+          <text fg="yellow">Select workshop duration:</text>
+          <box marginTop={1} flexDirection="column">
             {DURATION_OPTIONS.map((option, index) => (
-              <Box key={option.label}>
-                <Text color={index === selectedIndex ? 'green' : 'white'}>
+              <box key={option.label}>
+                <text fg={index === selectedIndex ? 'green' : 'white'}>
                   {index === selectedIndex ? '› ' : '  '}
                   {option.label}
-                </Text>
-              </Box>
+                </text>
+              </box>
             ))}
-          </Box>
-          <Box marginTop={1}>
-            <Text dimColor>Use ↑↓ to navigate, Enter to select</Text>
-          </Box>
-        </Box>
+          </box>
+          <box marginTop={1}>
+            <text opacity={0.5}>Use ↑↓ to navigate, Enter to select</text>
+          </box>
+        </box>
       )}
 
       {/* Step 4: Confirm */}
       {step === 4 && (
-        <Box flexDirection="column">
-          <Text bold color="cyan">
+        <box flexDirection="column">
+          <text attributes="bold" fg="cyan">
             Review your workshop configuration:
-          </Text>
+          </text>
           
-          <Box marginY={1} />
+          <box marginY={1} />
           
-          <Box flexDirection="column" paddingLeft={2}>
-            <Box>
-              <Text bold>Topic: </Text>
-              <Text>{topic}</Text>
-            </Box>
-            <Box>
-              <Text bold>Audience: </Text>
-              <Text>{audienceLevel}</Text>
+          <box flexDirection="column" paddingLeft={2}>
+            <box>
+              <text attributes="bold">Topic: </text>
+              <text>{topic}</text>
+            </box>
+            <box>
+              <text attributes="bold">Audience: </text>
+              <text>{audienceLevel}</text>
               {audienceStack && (
-                <Text> ({audienceStack})</Text>
+                <text> ({audienceStack})</text>
               )}
-            </Box>
-            <Box>
-              <Text bold>Duration: </Text>
-              <Text>{DURATION_OPTIONS.find(d => d.minutes === duration)?.label}</Text>
-            </Box>
+            </box>
+            <box>
+              <text attributes="bold">Duration: </text>
+              <text>{DURATION_OPTIONS.find(d => d.minutes === duration)?.label}</text>
+            </box>
             {contextFiles.length > 0 && (
-              <Box flexDirection="column">
-                <Text bold>Context files:</Text>
+              <box flexDirection="column">
+                <text attributes="bold">Context files:</text>
                 {contextFiles.map((file) => (
-                  <Text key={file}>  • {file}</Text>
+                  <text key={file}>  • {file}</text>
                 ))}
-              </Box>
+              </box>
             )}
-          </Box>
+          </box>
 
-          <Box>
-            <Text color="yellow">Create this workshop? (y/n): </Text>
-          </Box>
-        </Box>
+          <box>
+            <text fg="yellow">Create this workshop? (y/n): </text>
+          </box>
+        </box>
       )}
 
       {/* Footer hint */}
-      <Box marginTop={1}>
-        <Text dimColor>Press ESC to cancel</Text>
-      </Box>
-    </Box>
+      <box marginTop={1}>
+        <text opacity={0.5}>Press ESC to cancel</text>
+      </box>
+    </box>
   );
 }

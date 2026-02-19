@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import React, { useState, useCallback, useEffect } from 'react';
-import { render, Box, Text, useInput } from 'ink';
+import { createCliRenderer } from '@opentui/core';
+import { createRoot } from '@opentui/react';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { useKeyboard, KeyEvent } from '@opentui/react';
 import { loadWorkshop, saveWorkshop } from './storage.js';
 import { validateWorkshop } from './validation.js';
 import { exportToMarkdownFile } from './exporters/markdown.js';
@@ -150,24 +152,24 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
   }, []);
 
   // Handle error state: allow retry or exit
-  useInput((input, key) => {
-    if (input === 'r' || input === 'R') {
+  useKeyboard((event: KeyEvent) => {
+    if (event.name === 'r' || event.name === 'R') {
       setError(null);
       setScreen('wizard');
-    } else if (input === 'q' || input === 'Q' || key.escape) {
+    } else if (event.name === 'q' || event.name === 'Q' || event.name === 'escape') {
       void shutdown().then(() => process.exit(1));
     }
   }, { isActive: !!error });
 
   if (error) {
     return (
-      <Box flexDirection="column" padding={1}>
-        <Text color="red" bold>Error: {error}</Text>
-        <Box marginTop={1} flexDirection="column">
-          <Text>[r] Back to wizard</Text>
-          <Text>[q] Exit</Text>
-        </Box>
-      </Box>
+      <box flexDirection="column" padding={1}>
+        <text fg="red" attributes="bold">Error: {error}</text>
+        <box marginTop={1} flexDirection="column">
+          <text>[r] Back to wizard</text>
+          <text>[q] Exit</text>
+        </box>
+      </box>
     );
   }
 
@@ -287,10 +289,14 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
  */
 async function handleNew(contextFiles?: string[]): Promise<void> {
   return new Promise<void>((resolve) => {
-    const { unmount } = render(<App contextFiles={contextFiles} />);
-    // Ink handles the lifecycle — process.exit() in App will terminate
+    const renderer = createCliRenderer({ useAlternateScreen: true });
+    const root = createRoot(renderer);
+    root.render(<App contextFiles={contextFiles} />);
+    renderer.start();
+    
+    // OpenTUI handles the lifecycle — process.exit() in App will terminate
     process.on('exit', () => {
-      unmount();
+      root.unmount();
       resolve();
     });
   });
