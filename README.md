@@ -23,17 +23,18 @@ Workshop Factory is an AI-powered CLI tool that creates complete, practice-focus
 ## Quick Start
 
 ```bash
-# Run directly from GitHub (requires GitHub Copilot access)
+# Run directly from GitHub (requires GitHub Copilot access and Bun runtime)
 npx github:digitarald/workshop-factory new
 
 # Or clone and build locally
 git clone https://github.com/digitarald/workshop-factory.git
 cd workshop-factory
 npm install  # prepare script builds automatically
-node dist/workshop.js new
+bun dist/workshop.js new
+# Or with Node.js: node dist/workshop.js new
 ```
 
-> **Note:** Workshop Factory uses the [GitHub Copilot SDK](https://github.com/github/copilot-sdk) (technical preview) for AI generation. You need an active GitHub Copilot subscription.
+> **Note:** Workshop Factory uses the [GitHub Copilot SDK](https://github.com/github/copilot-sdk) (technical preview) for AI generation. You need an active GitHub Copilot subscription. The CLI is built with [OpenTUI](https://opentui.com) for terminal UI and runs on [Bun](https://bun.sh) (Node.js also supported).
 
 ---
 

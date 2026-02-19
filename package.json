@@ -23,7 +23,7 @@
     "dev": "tsc --watch --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "prepare": "npm run build"
+    "prepare": "tsc --noEmit && node esbuild.config.js"
   },
   "keywords": [
     "workshop",
@@ -35,7 +35,8 @@
   ],
   "dependencies": {
     "@github/copilot-sdk": "^0.1.24",
-    "ink": "^6.0.0",
+    "@opentui/core": "^0.1.77",
+    "@opentui/react": "^0.1.77",
     "js-yaml": "^4.1.0",
     "react": "^19.0.0",
     "zod": "^3.23.8",
@@ -43,9 +44,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/bun": "^1.3.9",
     "@types/eslint__js": "^8.42.3",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^25.2.3",
     "@types/react": "^19.0.0",
     "eslint": "^10.0.0",
     "esbuild": "^0.25.1",
@@ -53,6 +54,6 @@
     "typescript-eslint": "^8.56.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "bun": ">=1.0.0"
   }
 }

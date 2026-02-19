@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Text, useApp, useInput } from 'ink';
+import { useKeyboard } from '@opentui/react';
+import { TextAttributes } from '@opentui/core';
 import type { ExistingWorkshop } from '../workshops.js';
 
 export interface WorkshopPickerProps {
@@ -19,30 +20,29 @@ export function WorkshopPicker({
   onCreateNew,
   onSelect,
 }: WorkshopPickerProps) {
-  const { exit } = useApp();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const optionCount = workshops.length + 1;
 
-  useInput((_, key) => {
+  useKeyboard((event) => {
     if (isLoading || isOpening) {
-      if (key.escape) {
-        exit();
+      if (event.name === 'escape') {
+        process.exit(0);
       }
       return;
     }
 
-    if (key.upArrow) {
+    if (event.name === 'up') {
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : optionCount - 1));
       return;
     }
 
-    if (key.downArrow) {
+    if (event.name === 'down') {
       setSelectedIndex((prev) => (prev < optionCount - 1 ? prev + 1 : 0));
       return;
     }
 
-    if (key.return) {
+    if (event.name === 'return') {
       if (selectedIndex === 0) {
         onCreateNew();
         return;
@@ -57,71 +57,71 @@ export function WorkshopPicker({
       return;
     }
 
-    if (key.escape) {
-      exit();
+    if (event.name === 'escape') {
+      process.exit(0);
     }
   });
 
   return (
-    <Box flexDirection="column" padding={1}>
-      <Box marginBottom={1}>
-        <Text bold color="cyan">Workshop Factory</Text>
-      </Box>
+    <box style={{ flexDirection: 'column', padding: 1 }}>
+      <box style={{ marginBottom: 1 }}>
+        <text attributes={TextAttributes.BOLD} fg="cyan">Workshop Factory</text>
+      </box>
 
-      <Box marginBottom={1}>
-        <Text color="yellow">Select a workshop:</Text>
-      </Box>
+      <box style={{ marginBottom: 1 }}>
+        <text fg="yellow">Select a workshop:</text>
+      </box>
 
       {error && (
-        <Box marginBottom={1}>
-          <Text color="red">{error}</Text>
-        </Box>
+        <box style={{ marginBottom: 1 }}>
+          <text fg="red">{error}</text>
+        </box>
       )}
 
       {isLoading ? (
-        <Text dimColor>Loading workshops...</Text>
+        <text attributes={TextAttributes.DIM}>Loading workshops...</text>
       ) : (
-        <Box flexDirection="column">
-          <Box flexDirection="column" marginBottom={workshops.length > 0 ? 1 : 0}>
-            <Text color={selectedIndex === 0 ? 'green' : 'white'}>
+        <box style={{ flexDirection: 'column' }}>
+          <box style={{ flexDirection: 'column', marginBottom: workshops.length > 0 ? 1 : 0 }}>
+            <text fg={selectedIndex === 0 ? 'green' : 'white'}>
               {selectedIndex === 0 ? '› ' : '  '}
               Create new workshop
-            </Text>
-          </Box>
+            </text>
+          </box>
 
           {workshops.length === 0 ? (
-            <Text dimColor>No existing workshops found in this directory.</Text>
+            <text attributes={TextAttributes.DIM}>No existing workshops found in this directory.</text>
           ) : (
             workshops.map((workshop, index) => {
               const itemIndex = index + 1;
               const selected = selectedIndex === itemIndex;
               return (
-                <Box key={workshop.path} flexDirection="column" marginBottom={1}>
-                  <Text color={selected ? 'green' : 'white'}>
+                <box key={workshop.path} style={{ flexDirection: 'column', marginBottom: 1 }}>
+                  <text fg={selected ? 'green' : 'white'}>
                     {selected ? '› ' : '  '}
                     {workshop.title}
-                  </Text>
-                  <Box paddingLeft={2}>
-                    <Text dimColor>
+                  </text>
+                  <box style={{ paddingLeft: 2 }}>
+                    <text attributes={TextAttributes.DIM}>
                       {workshop.path} • {workshop.duration} min • {workshop.moduleCount} modules
-                    </Text>
-                  </Box>
-                </Box>
+                    </text>
+                  </box>
+                </box>
               );
             })
           )}
-        </Box>
+        </box>
       )}
 
-      <Box marginTop={1}>
-        <Text dimColor>
+      <box style={{ marginTop: 1 }}>
+        <text attributes={TextAttributes.DIM}>
           {isLoading
             ? 'Loading workshops... Press ESC to cancel'
             : isOpening
               ? 'Opening workshop... Press ESC to cancel'
               : 'Use ↑↓ to navigate, Enter to select, ESC to cancel'}
-        </Text>
-      </Box>
-    </Box>
+        </text>
+      </box>
+    </box>
   );
 }
