@@ -6,7 +6,8 @@
 npm run build        # Type-check (tsc --noEmit) then bundle (esbuild → dist/workshop.js)
 npm run build:bundle # esbuild only (skip type-check, fast iteration)
 npm run check        # Type-check only (tsc --noEmit)
-npm run dev          # Type-check watch mode (tsc --watch --noEmit)
+npm run dev          # Watch mode: rebuild dist on file changes
+npm run dev:check    # Type-check watch mode (tsc --watch --noEmit)
 npm run lint         # ESLint on src/
 npm run lint:fix     # ESLint with auto-fix
 ```

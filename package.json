@@ -20,7 +20,8 @@
     "build": "tsc --noEmit && node esbuild.config.js",
     "build:bundle": "node esbuild.config.js",
     "check": "tsc --noEmit",
-    "dev": "tsc --watch --noEmit",
+    "dev": "node esbuild.config.js --watch",
+    "dev:check": "tsc --watch --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "prepare": "npm run build"
