@@ -2,15 +2,17 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "dev",
+      "label": "build",
       "type": "shell",
-      "command": "npm run dev",
+      "command": "npm run build",
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "isBackground": true,
-      "problemMatcher": ["$tsc-watch"]
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": ["$tsc"]
     }
   ]
 }
