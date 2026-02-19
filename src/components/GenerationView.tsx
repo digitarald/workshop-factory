@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRenderer } from '@opentui/react';
+import { TextAttributes } from '@opentui/core';
 import type { Workshop, Module } from '../schema.js';
 import type { ValidationResult } from '../validation.js';
 import { WorkshopSchema, ModuleSchema } from '../schema.js';
@@ -286,13 +286,13 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
   return (
     <box style={{ flexDirection: 'column', borderStyle: 'single', borderColor: 'cyan', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 }}>
       {/* Header */}
-      <text style={{ fontWeight: 'bold', color: 'cyan' }}>Generating Workshop</text>
+      <text attributes={TextAttributes.BOLD} fg="cyan">Generating Workshop</text>
 
       <box style={{ marginTop: 1, flexDirection: 'column' }}>
         <text>
-          Phase: <text style={{ color: 'yellow' }}>{getPhaseText()}</text>
+          Phase: <text fg="yellow">{getPhaseText()}</text>
           {getStep() && (
-            <text style={{ opacity: 0.6 }}> [Step {getStep()}]</text>
+            <text attributes={TextAttributes.DIM}> [Step {getStep()}]</text>
           )}
         </text>
       </box>
@@ -300,12 +300,12 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
       {/* Module list */}
       {modules.length > 0 && (
         <box style={{ flexDirection: 'column', marginTop: 1 }}>
-          <text style={{ fontWeight: 'bold' }}>Modules:</text>
+          <text attributes={TextAttributes.BOLD}>Modules:</text>
           {modules.map((module, idx) => (
             <box key={idx} style={{ marginLeft: 1 }}>
-              <text style={{ color: module.status === 'complete' ? 'green' : module.status === 'generating' ? 'yellow' : 'gray' }}>
+              <text fg={module.status === 'complete' ? 'green' : module.status === 'generating' ? 'yellow' : 'gray'}>
                 {getStatusIcon(module.status)} Module {idx + 1}: {module.title}
-                <text style={{ opacity: 0.6 }}> ({module.duration}min)</text>
+                <text attributes={TextAttributes.DIM}> ({module.duration}min)</text>
               </text>
             </box>
           ))}
@@ -315,22 +315,22 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
       {/* Current section streaming display */}
       {phase === 'generating' && streamContent && (
         <box style={{ flexDirection: 'column', marginTop: 1 }}>
-          <text style={{ opacity: 0.6 }}>streaming: </text>
-          <text style={{ opacity: 0.6 }}>{streamContent}</text>
+          <text attributes={TextAttributes.DIM}>streaming: </text>
+          <text attributes={TextAttributes.DIM}>{streamContent}</text>
         </box>
       )}
 
       {/* Validation display */}
       {phase === 'validating' && (
         <box style={{ marginTop: 1 }}>
-          <text style={{ color: 'blue' }}>{streamContent}</text>
+          <text fg="blue">{streamContent}</text>
         </box>
       )}
 
       {/* Error display */}
       {phase === 'error' && error && (
         <box style={{ marginTop: 1, flexDirection: 'column' }}>
-          <text style={{ color: 'red', fontWeight: 'bold' }}>
+          <text fg="red" attributes={TextAttributes.BOLD}>
             Error: {error.message}
           </text>
         </box>
@@ -338,8 +338,8 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
 
       {/* Elapsed time */}
       <box style={{ marginTop: 1 }}>
-        <text style={{ opacity: 0.6 }}>
-          Elapsed: <text style={{ color: 'cyan' }}>{formatElapsed(elapsed)}</text>
+        <text attributes={TextAttributes.DIM}>
+          Elapsed: <text fg="cyan">{formatElapsed(elapsed)}</text>
         </text>
       </box>
     </box>

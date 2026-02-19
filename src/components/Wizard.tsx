@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useKeyboard, useRenderer } from '@opentui/react';
+import { useKeyboard } from '@opentui/react';
+import { TextAttributes } from '@opentui/core';
 
 interface WizardProps {
   contextFiles?: string[];
@@ -29,8 +30,6 @@ const DURATION_OPTIONS: DurationOption[] = [
 ];
 
 export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
-  const renderer = useRenderer();
-  
   // State machine: 0=topic, 1=audience_level, 2=audience_stack, 3=duration, 4=confirm
   const [step, setStep] = useState(0);
   
@@ -45,69 +44,69 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   // Handle keyboard input for all steps
-  useKeyboard((key) => {
+  useKeyboard((event) => {
     // Step 0: Topic (text input)
     if (step === 0) {
-      if (key === 'enter') {
+      if (event.name === 'return') {
         if (inputValue.trim()) {
           setTopic(inputValue.trim());
           setInputValue('');
           setStep(1);
         }
-      } else if (key === 'backspace') {
+      } else if (event.name === 'backspace') {
         setInputValue([...inputValue].slice(0, -1).join(''));
-      } else if (key === 'escape') {
-        renderer.exit();
-      } else if (key.length === 1) {
-        setInputValue(inputValue + key);
+      } else if (event.name === 'escape') {
+        process.exit(0);
+      } else if (event.name.length === 1) {
+        setInputValue(inputValue + event.name);
       }
     }
     // Step 1: Audience Level (select)
     else if (step === 1) {
-      if (key === 'up') {
+      if (event.name === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : AUDIENCE_LEVELS.length - 1));
-      } else if (key === 'down') {
+      } else if (event.name === 'down') {
         setSelectedIndex((prev) => (prev < AUDIENCE_LEVELS.length - 1 ? prev + 1 : 0));
-      } else if (key === 'enter') {
+      } else if (event.name === 'return') {
         setAudienceLevel(AUDIENCE_LEVELS[selectedIndex]!);
         setSelectedIndex(0);
         setStep(2);
-      } else if (key === 'escape') {
-        renderer.exit();
+      } else if (event.name === 'escape') {
+        process.exit(0);
       }
     }
     // Step 2: Audience Stack (text input, optional)
     else if (step === 2) {
-      if (key === 'enter') {
+      if (event.name === 'return') {
         setAudienceStack(inputValue.trim());
         setInputValue('');
         setSelectedIndex(0);
         setStep(3);
-      } else if (key === 'backspace') {
+      } else if (event.name === 'backspace') {
         setInputValue([...inputValue].slice(0, -1).join(''));
-      } else if (key === 'escape') {
-        renderer.exit();
-      } else if (key.length === 1) {
-        setInputValue(inputValue + key);
+      } else if (event.name === 'escape') {
+        process.exit(0);
+      } else if (event.name.length === 1) {
+        setInputValue(inputValue + event.name);
       }
     }
     // Step 3: Duration (select)
     else if (step === 3) {
-      if (key === 'up') {
+      if (event.name === 'up') {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : DURATION_OPTIONS.length - 1));
-      } else if (key === 'down') {
+      } else if (event.name === 'down') {
         setSelectedIndex((prev) => (prev < DURATION_OPTIONS.length - 1 ? prev + 1 : 0));
-      } else if (key === 'enter') {
+      } else if (event.name === 'return') {
         setDuration(DURATION_OPTIONS[selectedIndex]!.minutes);
         setSelectedIndex(0);
         setStep(4);
-      } else if (key === 'escape') {
-        renderer.exit();
+      } else if (event.name === 'escape') {
+        process.exit(0);
       }
     }
     // Step 4: Confirm (y/n)
     else if (step === 4) {
-      if (key === 'y' || key === 'Y') {
+      if (event.name === 'y' || event.name === 'Y') {
         onComplete({
           topic,
           audience: {
@@ -117,10 +116,10 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
           duration,
           contextFiles,
         });
-      } else if (key === 'n' || key === 'N') {
-        renderer.exit();
-      } else if (key === 'escape') {
-        renderer.exit();
+      } else if (event.name === 'n' || event.name === 'N') {
+        process.exit(0);
+      } else if (event.name === 'escape') {
+        process.exit(0);
       }
     }
   });
@@ -129,14 +128,14 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
     <box style={{ flexDirection: 'column', padding: 1 }}>
       {/* Header */}
       <box style={{ marginBottom: 1 }}>
-        <text style={{ fontWeight: 'bold', color: 'cyan' }}>
+        <text attributes={TextAttributes.BOLD} fg="cyan">
           Workshop Factory - New Workshop
         </text>
       </box>
 
       {/* Step indicator */}
       <box style={{ marginBottom: 1 }}>
-        <text style={{ opacity: 0.6 }}>
+        <text attributes={TextAttributes.DIM}>
           Step {step + 1} of 5
         </text>
       </box>
@@ -144,11 +143,11 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
       {/* Step 0: Topic */}
       {step === 0 && (
         <box style={{ flexDirection: 'column' }}>
-          <text style={{ color: 'yellow' }}>What topic should this workshop cover?</text>
+          <text fg="yellow">What topic should this workshop cover?</text>
           <box style={{ marginTop: 1 }}>
-            <text style={{ color: 'green' }}>&gt; </text>
+            <text fg="green">&gt; </text>
             <text>{inputValue}</text>
-            <text style={{ color: 'cyan' }}>█</text>
+            <text fg="cyan">█</text>
           </box>
         </box>
       )}
@@ -156,11 +155,11 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
       {/* Step 1: Audience Level */}
       {step === 1 && (
         <box style={{ flexDirection: 'column' }}>
-          <text style={{ color: 'yellow' }}>Select audience level:</text>
+          <text fg="yellow">Select audience level:</text>
           <box style={{ marginTop: 1, flexDirection: 'column' }}>
             {AUDIENCE_LEVELS.map((level, index) => (
               <box key={level}>
-                <text style={{ color: index === selectedIndex ? 'green' : 'white' }}>
+                <text fg={index === selectedIndex ? 'green' : 'white'}>
                   {index === selectedIndex ? '› ' : '  '}
                   {level}
                 </text>
@@ -168,7 +167,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
             ))}
           </box>
           <box style={{ marginTop: 1 }}>
-            <text style={{ opacity: 0.6 }}>Use ↑↓ to navigate, Enter to select</text>
+            <text attributes={TextAttributes.DIM}>Use ↑↓ to navigate, Enter to select</text>
           </box>
         </box>
       )}
@@ -176,11 +175,11 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
       {/* Step 2: Audience Stack */}
       {step === 2 && (
         <box style={{ flexDirection: 'column' }}>
-          <text style={{ color: 'yellow' }}>What technology stack? (optional, press Enter to skip)</text>
+          <text fg="yellow">What technology stack? (optional, press Enter to skip)</text>
           <box style={{ marginTop: 1 }}>
-            <text style={{ color: 'green' }}>&gt; </text>
+            <text fg="green">&gt; </text>
             <text>{inputValue}</text>
-            <text style={{ color: 'cyan' }}>█</text>
+            <text fg="cyan">█</text>
           </box>
         </box>
       )}
@@ -188,11 +187,11 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
       {/* Step 3: Duration */}
       {step === 3 && (
         <box style={{ flexDirection: 'column' }}>
-          <text style={{ color: 'yellow' }}>Select workshop duration:</text>
+          <text fg="yellow">Select workshop duration:</text>
           <box style={{ marginTop: 1, flexDirection: 'column' }}>
             {DURATION_OPTIONS.map((option, index) => (
               <box key={option.label}>
-                <text style={{ color: index === selectedIndex ? 'green' : 'white' }}>
+                <text fg={index === selectedIndex ? 'green' : 'white'}>
                   {index === selectedIndex ? '› ' : '  '}
                   {option.label}
                 </text>
@@ -200,7 +199,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
             ))}
           </box>
           <box style={{ marginTop: 1 }}>
-            <text style={{ opacity: 0.6 }}>Use ↑↓ to navigate, Enter to select</text>
+            <text attributes={TextAttributes.DIM}>Use ↑↓ to navigate, Enter to select</text>
           </box>
         </box>
       )}
@@ -208,7 +207,7 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
       {/* Step 4: Confirm */}
       {step === 4 && (
         <box style={{ flexDirection: 'column' }}>
-          <text style={{ fontWeight: 'bold', color: 'cyan' }}>
+          <text attributes={TextAttributes.BOLD} fg="cyan">
             Review your workshop configuration:
           </text>
           
@@ -216,23 +215,23 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
           
           <box style={{ flexDirection: 'column', paddingLeft: 2 }}>
             <box>
-              <text style={{ fontWeight: 'bold' }}>Topic: </text>
+              <text attributes={TextAttributes.BOLD}>Topic: </text>
               <text>{topic}</text>
             </box>
             <box>
-              <text style={{ fontWeight: 'bold' }}>Audience: </text>
+              <text attributes={TextAttributes.BOLD}>Audience: </text>
               <text>{audienceLevel}</text>
               {audienceStack && (
                 <text> ({audienceStack})</text>
               )}
             </box>
             <box>
-              <text style={{ fontWeight: 'bold' }}>Duration: </text>
+              <text attributes={TextAttributes.BOLD}>Duration: </text>
               <text>{DURATION_OPTIONS.find(d => d.minutes === duration)?.label}</text>
             </box>
             {contextFiles.length > 0 && (
               <box style={{ flexDirection: 'column' }}>
-                <text style={{ fontWeight: 'bold' }}>Context files:</text>
+                <text attributes={TextAttributes.BOLD}>Context files:</text>
                 {contextFiles.map((file) => (
                   <text key={file}>  • {file}</text>
                 ))}
@@ -241,14 +240,14 @@ export function Wizard({ contextFiles = [], onComplete }: WizardProps) {
           </box>
 
           <box>
-            <text style={{ color: 'yellow' }}>Create this workshop? (y/n): </text>
+            <text fg="yellow">Create this workshop? (y/n): </text>
           </box>
         </box>
       )}
 
       {/* Footer hint */}
       <box style={{ marginTop: 1 }}>
-        <text style={{ opacity: 0.6 }}>Press ESC to cancel</text>
+        <text attributes={TextAttributes.DIM}>Press ESC to cancel</text>
       </box>
     </box>
   );

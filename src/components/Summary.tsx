@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useKeyboard } from '@opentui/react';
+import { TextAttributes } from '@opentui/core';
 import type { Workshop } from '../schema.js';
 
 export interface SummaryProps {
@@ -22,7 +23,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
   const actionInFlight = useRef(false);
 
   // Handle keyboard input
-  useKeyboard((key) => {
+  useKeyboard((event) => {
     if (actionInFlight.current) return;
 
     const actionMap: Record<string, 'export-md' | 'generate-repo' | 'validate' | 'exit'> = {
@@ -31,7 +32,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
       v: 'validate',
       q: 'exit',
     };
-    const action = actionMap[key.toLowerCase()];
+    const action = actionMap[event.name.toLowerCase()];
     if (!action) return;
 
     actionInFlight.current = true;
@@ -45,7 +46,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
       <box
         style={{
           flexDirection: 'column',
-          borderStyle: 'round',
+          borderStyle: 'rounded',
           borderColor: saveError ? 'yellow' : 'green',
           paddingLeft: 2,
           paddingRight: 2,
@@ -55,29 +56,29 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
       >
         {/* Header */}
         <box style={{ justifyContent: 'center', marginBottom: 1 }}>
-          <text style={{ fontWeight: 'bold', color: saveError ? 'yellow' : 'green' }}>
+          <text attributes={TextAttributes.BOLD} fg={saveError ? 'yellow' : 'green'}>
             {saveError ? 'Workshop Generated (not saved)' : 'Workshop Created'}
           </text>
         </box>
 
         {/* Title */}
         <box style={{ justifyContent: 'center', marginBottom: 1 }}>
-          <text style={{ fontWeight: 'bold' }}>📚  {workshop.title}</text>
+          <text attributes={TextAttributes.BOLD}>📚  {workshop.title}</text>
         </box>
 
         {/* Basic Stats */}
         <box style={{ flexDirection: 'column', marginBottom: 1 }}>
           <box>
             <text>Duration:    </text>
-            <text style={{ fontWeight: 'bold' }}>{stats.totalDuration} min</text>
+            <text attributes={TextAttributes.BOLD}>{stats.totalDuration} min</text>
           </box>
           <box>
             <text>Modules:     </text>
-            <text style={{ fontWeight: 'bold' }}>{stats.moduleCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.moduleCount}</text>
           </box>
           <box>
             <text>Sections:    </text>
-            <text style={{ fontWeight: 'bold' }}>{stats.sectionCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.sectionCount}</text>
           </box>
         </box>
 
@@ -85,7 +86,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         <box
           style={{
             flexDirection: 'column',
-            borderStyle: 'round',
+            borderStyle: 'rounded',
             borderColor: 'gray',
             paddingLeft: 1,
             paddingRight: 1,
@@ -95,7 +96,7 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
           }}
         >
           <box>
-            <text style={{ fontWeight: 'bold' }}>Duration Breakdown</text>
+            <text attributes={TextAttributes.BOLD}>Duration Breakdown</text>
           </box>
           
           {/* Exercises */}
@@ -131,12 +132,12 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         <box style={{ flexDirection: 'column', marginBottom: 1 }}>
           <box>
             <text>Checkpoints:  </text>
-            <text style={{ fontWeight: 'bold' }}>{stats.checkpointCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.checkpointCount}</text>
             <text> (every ~{stats.avgCheckpointSpacing} min)</text>
           </box>
           <box>
             <text>Exercises:    </text>
-            <text style={{ fontWeight: 'bold' }}>{stats.exerciseCount}</text>
+            <text attributes={TextAttributes.BOLD}>{stats.exerciseCount}</text>
             <text> (with starter code + solutions)</text>
           </box>
         </box>
@@ -144,30 +145,30 @@ export function Summary({ workshop, savePath, saveError, validationWarnings = []
         {/* Save Path */}
         {saveError ? (
           <box style={{ flexDirection: 'column', marginBottom: 1 }}>
-            <text style={{ color: 'red' }}>Save failed: {saveError}</text>
-            <text style={{ opacity: 0.6 }}>  Target: {savePath}</text>
-            <text style={{ opacity: 0.6 }}>  Use [e] or [g] to export from memory</text>
+            <text fg="red">Save failed: {saveError}</text>
+            <text attributes={TextAttributes.DIM}>  Target: {savePath}</text>
+            <text attributes={TextAttributes.DIM}>  Use [e] or [g] to export from memory</text>
           </box>
         ) : (
           <box style={{ marginBottom: 1 }}>
             <text>Saved to: </text>
-            <text style={{ color: 'cyan' }}>{savePath}</text>
+            <text fg="cyan">{savePath}</text>
           </box>
         )}
 
         {/* Validation Warnings */}
         {validationWarnings.length > 0 && (
           <box style={{ flexDirection: 'column', marginBottom: 1 }}>
-            <text style={{ color: 'yellow', fontWeight: 'bold' }}>Validation warnings ({validationWarnings.length}):</text>
+            <text fg="yellow" attributes={TextAttributes.BOLD}>Validation warnings ({validationWarnings.length}):</text>
             {validationWarnings.map((warning, idx) => (
-              <text key={idx} style={{ color: 'yellow' }}>  ✗ {warning}</text>
+              <text key={idx} fg="yellow">  ✗ {warning}</text>
             ))}
           </box>
         )}
 
         {/* Next Steps */}
         <box style={{ flexDirection: 'column' }}>
-          <text style={{ fontWeight: 'bold' }}>Next steps:</text>
+          <text attributes={TextAttributes.BOLD}>Next steps:</text>
           <text>[e] Export to Markdown</text>
           <text>[g] Generate workshop repo</text>
           <text>[v] Validate structure</text>

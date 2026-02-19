@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useRenderer } from '@opentui/react';
+import { TextAttributes } from '@opentui/core';
 import { generateRepo, type GenerateRepoEvent, type RepoPhase } from '../exporters/repo-generate.js';
 import type { Workshop } from '../schema.js';
 
@@ -78,11 +78,11 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
   return (
     <box style={{ flexDirection: 'column', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 }}>
       <box
-        style={{ flexDirection: 'column', borderStyle: 'round', borderColor: done ? 'green' : 'blue', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 }}
+        style={{ flexDirection: 'column', borderStyle: 'rounded', borderColor: done ? 'green' : 'blue', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 }}
       >
         {/* Header */}
         <box style={{ justifyContent: 'center', marginBottom: 1 }}>
-          <text style={{ fontWeight: 'bold', color: done ? 'green' : 'blue' }}>
+          <text attributes={TextAttributes.BOLD} fg={done ? 'green' : 'blue'}>
             {done ? 'Workshop Repo Generated' : 'Generating Workshop Repo'}
           </text>
         </box>
@@ -95,12 +95,12 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
                 {PHASE_LABELS[currentPhase]} ({phaseIndex + 1}/{phaseTotal})...
               </text>
               {streamingChars > 0 && (
-                <text style={{ opacity: 0.6 }}> {formatChars(streamingChars)} received</text>
+                <text attributes={TextAttributes.DIM}> {formatChars(streamingChars)} received</text>
               )}
             </box>
             {streamingPreview && (
               <box>
-                <text style={{ opacity: 0.6 }}>  &ldquo;{streamingPreview.slice(-70).trimStart()}&hellip;&rdquo;</text>
+                <text attributes={TextAttributes.DIM}>  &ldquo;{streamingPreview.slice(-70).trimStart()}&hellip;&rdquo;</text>
               </box>
             )}
           </box>
@@ -109,13 +109,13 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
         {/* Files written */}
         {files.length > 0 && (
           <box style={{ flexDirection: 'column', marginBottom: 1 }}>
-            <text style={{ fontWeight: 'bold' }}>Files written ({files.length}):</text>
+            <text attributes={TextAttributes.BOLD}>Files written ({files.length}):</text>
             {files.map((file, idx) => (
               <box key={idx}>
-                <text style={{ color: 'green' }}>  + </text>
+                <text fg="green">  + </text>
                 <text>{file.path}</text>
                 {file.bytes > 0 && (
-                  <text style={{ opacity: 0.6 }}> ({formatBytes(file.bytes)})</text>
+                  <text attributes={TextAttributes.DIM}> ({formatBytes(file.bytes)})</text>
                 )}
               </box>
             ))}
@@ -126,7 +126,7 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
         {done && (
           <box>
             <text>Output: </text>
-            <text style={{ color: 'cyan' }}>{outputDir}</text>
+            <text fg="cyan">{outputDir}</text>
           </box>
         )}
       </box>

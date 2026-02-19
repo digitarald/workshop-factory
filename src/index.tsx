@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createCliRenderer } from '@opentui/core';
 import { createRoot, useRenderer, useKeyboard } from '@opentui/react';
+import { TextAttributes } from '@opentui/core';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -152,15 +153,14 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
   }, []);
 
   // Handle error state: allow retry or exit
-  useKeyboard((key) => {
+  useKeyboard((event) => {
     if (!error) return;
     
-    if (key === 'r' || key === 'R') {
+    if (event.name === 'r' || event.name === 'R') {
       setError(null);
       setScreen('wizard');
-    } else if (key === 'q' || key === 'Q' || key === 'escape') {
+    } else if (event.name === 'q' || event.name === 'Q' || event.name === 'escape') {
       void shutdown().then(() => {
-        renderer.exit();
         process.exit(1);
       });
     }
@@ -169,7 +169,7 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
   if (error) {
     return (
       <box style={{ flexDirection: 'column', padding: 1 }}>
-        <text style={{ color: 'red', fontWeight: 'bold' }}>Error: {error}</text>
+        <text fg="red" attributes={TextAttributes.BOLD}>Error: {error}</text>
         <box style={{ marginTop: 1, flexDirection: 'column' }}>
           <text>[r] Back to wizard</text>
           <text>[q] Exit</text>
@@ -258,7 +258,6 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
               }
             } else if (action === 'exit') {
               await shutdown();
-              renderer.exit();
               process.exit(0);
             }
           } catch (e) {
@@ -278,7 +277,6 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
         onComplete={(dir) => {
           console.log(`\n✓ Workshop repo generated at ${dir}/`);
           void shutdown().then(() => {
-            renderer.exit();
             process.exit(0);
           });
         }}
