@@ -13,6 +13,10 @@ npm run lint:fix     # ESLint with auto-fix
 
 No test suite is configured yet.
 
+## Agent Guidance
+
+1. If I don't specifically start in plan mode, don't switch for to planning but assume I want to start implementing.
+
 ## Architecture
 
 **Workshop Factory** is a CLI tool that generates pedagogically structured workshops. It uses **Ink 6** (React for terminals) for TUI and the **GitHub Copilot SDK** for AI generation.
