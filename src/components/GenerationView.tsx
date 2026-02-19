@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text } from 'ink';
 import type { Workshop, Module } from '../schema.js';
 import type { ValidationResult } from '../validation.js';
 import { WorkshopSchema, ModuleSchema } from '../schema.js';
@@ -284,64 +283,62 @@ export function GenerationView({ params, onComplete, onError }: GenerationViewPr
   };
 
   return (
-    <Box flexDirection="column" borderStyle="single" borderColor="cyan" paddingX={2} paddingY={1}>
+    <box flexDirection="column" border borderStyle="single" borderColor="cyan" paddingX={2} paddingY={1}>
       {/* Header */}
-      <Text bold color="cyan">Generating Workshop</Text>
+      <text fg="cyan"><strong>Generating Workshop</strong></text>
 
-      <Box marginTop={1} flexDirection="column">
-        <Text>
-          Phase: <Text color="yellow">{getPhaseText()}</Text>
+      <box marginTop={1} flexDirection="column">
+        <text>
+          Phase: <span fg="yellow">{getPhaseText()}</span>
           {getStep() && (
-            <Text dimColor> [Step {getStep()}]</Text>
+            <span fg="#888888"> [Step {getStep()}]</span>
           )}
-        </Text>
-      </Box>
+        </text>
+      </box>
 
       {/* Module list */}
       {modules.length > 0 && (
-        <Box flexDirection="column" marginTop={1}>
-          <Text bold>Modules:</Text>
+        <box flexDirection="column" marginTop={1}>
+          <text><strong>Modules:</strong></text>
           {modules.map((module, idx) => (
-            <Box key={idx} marginLeft={1}>
-              <Text color={module.status === 'complete' ? 'green' : module.status === 'generating' ? 'yellow' : 'gray'}>
+            <box key={idx} marginLeft={1}>
+              <text fg={module.status === 'complete' ? 'green' : module.status === 'generating' ? 'yellow' : 'gray'}>
                 {getStatusIcon(module.status)} Module {idx + 1}: {module.title}
-                <Text dimColor> ({module.duration}min)</Text>
-              </Text>
-            </Box>
+                <span fg="#888888"> ({module.duration}min)</span>
+              </text>
+            </box>
           ))}
-        </Box>
+        </box>
       )}
 
       {/* Current section streaming display */}
       {phase === 'generating' && streamContent && (
-        <Box flexDirection="column" marginTop={1}>
-          <Text dimColor>streaming: </Text>
-          <Text dimColor>{streamContent}</Text>
-        </Box>
+        <box flexDirection="column" marginTop={1}>
+          <text fg="#888888">streaming: </text>
+          <text fg="#888888">{streamContent}</text>
+        </box>
       )}
 
       {/* Validation display */}
       {phase === 'validating' && (
-        <Box marginTop={1}>
-          <Text color="blue">{streamContent}</Text>
-        </Box>
+        <box marginTop={1}>
+          <text fg="blue">{streamContent}</text>
+        </box>
       )}
 
       {/* Error display */}
       {phase === 'error' && error && (
-        <Box marginTop={1} flexDirection="column">
-          <Text color="red" bold>
-            Error: {error.message}
-          </Text>
-        </Box>
+        <box marginTop={1} flexDirection="column">
+          <text fg="red"><strong>Error: {error.message}</strong></text>
+        </box>
       )}
 
       {/* Elapsed time */}
-      <Box marginTop={1}>
-        <Text dimColor>
-          Elapsed: <Text color="cyan">{formatElapsed(elapsed)}</Text>
-        </Text>
-      </Box>
-    </Box>
+      <box marginTop={1}>
+        <text fg="#888888">
+          Elapsed: <span fg="cyan">{formatElapsed(elapsed)}</span>
+        </text>
+      </box>
+    </box>
   );
 }

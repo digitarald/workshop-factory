@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Text } from 'ink';
 import { generateRepo, type GenerateRepoEvent, type RepoPhase } from '../exporters/repo-generate.js';
 import type { Workshop } from '../schema.js';
 
@@ -76,65 +75,67 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
   }, []);
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1}>
-      <Box
+    <box flexDirection="column" paddingX={2} paddingY={1}>
+      <box
         flexDirection="column"
-        borderStyle="round"
+        border
+        borderStyle="rounded"
         borderColor={done ? 'green' : 'blue'}
         paddingX={2}
         paddingY={1}
       >
         {/* Header */}
-        <Box justifyContent="center" marginBottom={1}>
-          <Text bold color={done ? 'green' : 'blue'}>
-            {done ? 'Workshop Repo Generated' : 'Generating Workshop Repo'}
-          </Text>
-        </Box>
+        <box justifyContent="center" marginBottom={1}>
+          <text fg={done ? 'green' : 'blue'}>
+            <strong>{done ? 'Workshop Repo Generated' : 'Generating Workshop Repo'}</strong>
+          </text>
+        </box>
 
         {/* Phase indicator */}
         {currentPhase && !done && (
-          <Box flexDirection="column" marginBottom={1}>
-            <Box>
-              <Text>
+          <box flexDirection="column" marginBottom={1}>
+            <box>
+              <text>
                 {PHASE_LABELS[currentPhase]} ({phaseIndex + 1}/{phaseTotal})...
-              </Text>
-              {streamingChars > 0 && (
-                <Text dimColor> {formatChars(streamingChars)} received</Text>
-              )}
-            </Box>
+                {streamingChars > 0 && (
+                  <span fg="#888888"> {formatChars(streamingChars)} received</span>
+                )}
+              </text>
+            </box>
             {streamingPreview && (
-              <Box>
-                <Text dimColor>  &ldquo;{streamingPreview.slice(-70).trimStart()}&hellip;&rdquo;</Text>
-              </Box>
+              <box>
+                <text fg="#888888">  "{streamingPreview.slice(-70).trimStart()}…"</text>
+              </box>
             )}
-          </Box>
+          </box>
         )}
 
         {/* Files written */}
         {files.length > 0 && (
-          <Box flexDirection="column" marginBottom={1}>
-            <Text bold>Files written ({files.length}):</Text>
+          <box flexDirection="column" marginBottom={1}>
+            <text><strong>Files written ({files.length}):</strong></text>
             {files.map((file, idx) => (
-              <Box key={idx}>
-                <Text color="green">  + </Text>
-                <Text>{file.path}</Text>
-                {file.bytes > 0 && (
-                  <Text dimColor> ({formatBytes(file.bytes)})</Text>
-                )}
-              </Box>
+              <box key={idx}>
+                <text>
+                  <span fg="green">  + </span>
+                  {file.path}
+                  {file.bytes > 0 && (
+                    <span fg="#888888"> ({formatBytes(file.bytes)})</span>
+                  )}
+                </text>
+              </box>
             ))}
-          </Box>
+          </box>
         )}
 
         {/* Output directory */}
         {done && (
-          <Box>
-            <Text>Output: </Text>
-            <Text color="cyan">{outputDir}</Text>
-          </Box>
+          <box>
+            <text>Output: <span fg="cyan">{outputDir}</span></text>
+          </box>
         )}
-      </Box>
-    </Box>
+      </box>
+    </box>
   );
 }
 

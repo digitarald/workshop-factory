@@ -1,6 +1,7 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import React, { useState, useCallback, useEffect } from 'react';
-import { render, Box, Text, useInput } from 'ink';
+import { createCliRenderer } from '@opentui/core';
+import { createRoot, useKeyboard, useRenderer } from '@opentui/react';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -150,24 +151,26 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
   }, []);
 
   // Handle error state: allow retry or exit
-  useInput((input, key) => {
-    if (input === 'r' || input === 'R') {
+  const renderer = useRenderer();
+  useKeyboard((key) => {
+    if (!error) return;
+    if (key.name === 'r') {
       setError(null);
       setScreen('wizard');
-    } else if (input === 'q' || input === 'Q' || key.escape) {
-      void shutdown().then(() => process.exit(1));
+    } else if (key.name === 'q' || key.name === 'escape') {
+      void shutdown().then(() => renderer.destroy());
     }
-  }, { isActive: !!error });
+  });
 
   if (error) {
     return (
-      <Box flexDirection="column" padding={1}>
-        <Text color="red" bold>Error: {error}</Text>
-        <Box marginTop={1} flexDirection="column">
-          <Text>[r] Back to wizard</Text>
-          <Text>[q] Exit</Text>
-        </Box>
-      </Box>
+      <box flexDirection="column" padding={1}>
+        <text fg="red"><strong>Error: {error}</strong></text>
+        <box marginTop={1} flexDirection="column">
+          <text>[r] Back to wizard</text>
+          <text>[q] Exit</text>
+        </box>
+      </box>
     );
   }
 
@@ -251,7 +254,7 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
               }
             } else if (action === 'exit') {
               await shutdown();
-              process.exit(0);
+              renderer.destroy();
             }
           } catch (e) {
             console.error(e instanceof Error ? e.message : String(e));
@@ -269,7 +272,7 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
         outputDir={repoDir}
         onComplete={(dir) => {
           console.log(`\n✓ Workshop repo generated at ${dir}/`);
-          void shutdown().then(() => process.exit(0));
+          void shutdown().then(() => renderer.destroy());
         }}
         onError={(err) => {
           setSaveError(`Repo generation failed: ${err.message}`);
@@ -286,14 +289,13 @@ function App({ contextFiles }: { contextFiles?: string[] }) {
  * Handler for 'workshop new' command
  */
 async function handleNew(contextFiles?: string[]): Promise<void> {
-  return new Promise<void>((resolve) => {
-    const { unmount } = render(<App contextFiles={contextFiles} />);
-    // Ink handles the lifecycle — process.exit() in App will terminate
-    process.on('exit', () => {
-      unmount();
-      resolve();
-    });
+  const { promise, resolve } = Promise.withResolvers<void>();
+  const renderer = await createCliRenderer({
+    exitOnCtrlC: false,
+    onDestroy: resolve,
   });
+  createRoot(renderer).render(<App contextFiles={contextFiles} />);
+  await promise;
 }
 
 /**

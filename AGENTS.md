@@ -6,7 +6,8 @@
 npm run build        # Type-check (tsc --noEmit) then bundle (esbuild → dist/workshop.js)
 npm run build:bundle # esbuild only (skip type-check, fast iteration)
 npm run check        # Type-check only (tsc --noEmit)
-npm run dev          # Type-check watch mode (tsc --watch --noEmit)
+npm run dev          # esbuild watch mode (auto-rebuild on file changes)
+npm run dev:check    # Type-check watch mode (tsc --watch --noEmit)
 npm run lint         # ESLint on src/
 npm run lint:fix     # ESLint with auto-fix
 ```
@@ -15,7 +16,7 @@ No test suite is configured yet.
 
 ## Architecture
 
-**Workshop Factory** is a CLI tool that generates pedagogically structured workshops. It uses **Ink 6** (React for terminals) for TUI and the **GitHub Copilot SDK** for AI generation.
+**Workshop Factory** is a CLI tool that generates pedagogically structured workshops. It uses **OpenTUI** (`@opentui/core` + `@opentui/react`, React for terminals) for TUI and the **GitHub Copilot SDK** for AI generation. It supports both **Node.js ≥20** and **Bun ≥1.0** runtimes.
 
 Latest Copilot SDK docs: https://github.com/github/copilot-sdk
 
@@ -27,7 +28,7 @@ The `workshop new` command renders a React app with screens chained via state ma
 Picker → Wizard → GenerationView → Summary ↔ ExportProgress
 ```
 
-Each screen is an Ink component that calls an `onComplete`/`onAction` callback to trigger the next screen. The parent `App` component holds `screen` state and the accumulated data (`wizardParams` → `workshop`). From Summary, users can export to Markdown (`[e]`) or generate a template repo (`[g]` → ExportProgress). ExportProgress errors route back to Summary with an inline error message.
+Each screen is an OpenTUI React component that calls an `onComplete`/`onAction` callback to trigger the next screen. The parent `App` component holds `screen` state and the accumulated data (`wizardParams` → `workshop`). From Summary, users can export to Markdown (`[e]`) or generate a template repo (`[g]` → ExportProgress). ExportProgress errors route back to Summary with an inline error message.
 
 ### CLI Commands
 
@@ -79,14 +80,14 @@ The `writeFile` tool (`src/tools/writeFile.ts`) is special — it's instantiated
 
 ### Build Pipeline
 
-esbuild bundles `src/index.tsx` into a single `dist/workshop.js` file. External deps (`ink`, `react`, `@github/copilot-sdk`) are not bundled — they resolve from `node_modules` at runtime. TypeScript compilation (`tsc --noEmit`) is used only for type checking, not code generation.
+esbuild bundles `src/index.tsx` into a single `dist/workshop.js` file. External deps (`@opentui/core`, `@opentui/react`, `react`, `@github/copilot-sdk`) are not bundled — they resolve from `node_modules` at runtime. TypeScript compilation (`tsc --noEmit`) is used only for type checking, not code generation.
 
 Prompt templates in `prompts/` (WORKSHOP-PEDAGOGY.md, WORKSHOP-DESIGN.md, WORKSHOP-SCAFFOLD.md, WORKSHOP-README.md) are **not bundled** — they ship as-is via `"files": ["dist", "prompts"]` in package.json and are read at runtime.
 
 ## Key Conventions
 
-- **ESM with `.js` extensions** — All relative imports must use `.js` extensions (e.g., `import { foo } from './bar.js'`). Required by `"module": "nodenext"` in tsconfig.
-- **Ink 6 built-ins only** — Components use only `Box`, `Text`, `useInput`, `useApp` from `ink`. No third-party Ink component libraries.
+- **ESM with `.js` extensions** — All relative imports must use `.js` extensions (e.g., `import { foo } from './bar.js'`). Required by `"module": "ESNext"` + `"moduleResolution": "bundler"` in tsconfig.
+- **OpenTUI React components** — Use lowercase `<box>` and `<text>` JSX tags from `@opentui/react`. Text colors via `fg` prop. Bold/italic via nested `<strong>`/`<em>` inside `<text>`. Dim text via `fg="#888888"`. Keyboard input via `useKeyboard` hook. Never use `process.exit()` inside React components — call `useRenderer().destroy()` instead.
 - **Resolve paths via `import.meta.url`** — Never use `process.cwd()` or `__dirname` to find package files. Use `fileURLToPath(import.meta.url)` + `dirname()` + `join()`.
 - **Zod schemas are runtime validators** — Used for type inference, YAML validation, and SDK tool parameter validation. When adding new data fields, update the Zod schema in `schema.ts` first.
 - **Strict TypeScript** — `noUncheckedIndexedAccess` is enabled; array/object index access returns `T | undefined` and must be checked.
