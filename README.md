@@ -104,7 +104,8 @@ Validation checks:
 - Checkpoint spacing (every ~20-25 minutes)
 - Exercise completeness (starter code + solution)
 - Duration consistency (sections sum to module/workshop duration)
-- Bloom's taxonomy alignment
+- Bloom's taxonomy alignment (learning objectives use appropriate verbs)
+- Section content cognitive level (exercises, lectures, discussions, checkpoints use appropriate Bloom's verbs for the audience level)
 
 ---
 

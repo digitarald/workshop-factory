@@ -27,6 +27,40 @@
 
 **Validation**: Every learning objective MUST start with an action verb from the appropriate cognitive level tier.
 
+### Section Content Cognitive Level
+
+**Rule**: Not only learning objectives, but ALL section content must use cognitive level verbs appropriate for the audience level.
+
+This validation applies to:
+- **Exercise instructions**: What learners are asked to do
+- **Lecture talking points**: Concepts being taught
+- **Discussion prompts**: Questions posed to learners
+- **Checkpoint questions**: Assessment items
+
+**Examples of Misalignment**:
+
+❌ **Beginner workshop using advanced verbs**:
+- Exercise: "Design and architect a microservices system" (uses Create-level verbs)
+- Discussion: "Evaluate the trade-offs between different architectures" (uses Evaluate-level verb)
+- Checkpoint: "Critique this implementation approach" (uses Evaluate-level verb)
+
+❌ **Advanced workshop using basic verbs**:
+- Exercise: "List all the configuration options" (uses Remember-level verb)
+- Lecture: "Define what a container is" (uses Remember-level verb)
+- Checkpoint: "Recall the basic commands" (uses Remember-level verb)
+
+✅ **Beginner workshop using appropriate verbs**:
+- Exercise: "Implement a basic REST API endpoint" (uses Apply-level verb)
+- Lecture: "Explain how HTTP requests work" (uses Understand-level verb)
+- Checkpoint: "Identify the correct HTTP status code" (uses Remember-level verb)
+
+✅ **Advanced workshop using appropriate verbs**:
+- Exercise: "Analyze the performance bottlenecks in this system" (uses Analyze-level verb)
+- Discussion: "Evaluate different caching strategies for this use case" (uses Evaluate-level verb)
+- Checkpoint: "Design a monitoring solution for this microservice" (uses Create-level verb)
+
+**Validation**: The validator scans all section content for Bloom's action verbs and flags any that are inappropriate for the declared audience level.
+
 ---
 
 ## 2. Practice-First Ratio
@@ -247,6 +281,7 @@ modules:
 Before returning generated content, verify:
 
 - [ ] All learning objectives use Bloom's action verbs at appropriate level
+- [ ] All section content (exercise instructions, lecture points, discussion prompts, checkpoint questions) uses cognitive level verbs appropriate for the audience level
 - [ ] Practice ratio ≥60%, lectures ≤25%, checkpoints ≥15%
 - [ ] Exercises allocate 2-3× expert completion time
 - [ ] Checkpoints appear every 20-25 minutes
