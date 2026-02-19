@@ -30,9 +30,11 @@ export async function saveWorkshop(
   }
 
   // Serialize to YAML with readable formatting
+  // lineWidth: -1 prevents line wrapping and ensures consistent literal block
+  // scalars (|-) for multi-line code, making exercise sections much more readable
   const yamlContent = dump(workshop, {
     indent: 2,
-    lineWidth: 80,
+    lineWidth: -1,
     noRefs: true,
     sortKeys: false,
   });
