@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Text } from 'ink';
+import { useRenderer } from '@opentui/react';
 import { generateRepo, type GenerateRepoEvent, type RepoPhase } from '../exporters/repo-generate.js';
 import type { Workshop } from '../schema.js';
 
@@ -76,65 +76,61 @@ export function ExportProgress({ workshop, outputDir, onComplete, onError }: Exp
   }, []);
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1}>
-      <Box
-        flexDirection="column"
-        borderStyle="round"
-        borderColor={done ? 'green' : 'blue'}
-        paddingX={2}
-        paddingY={1}
+    <box style={{ flexDirection: 'column', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 }}>
+      <box
+        style={{ flexDirection: 'column', borderStyle: 'round', borderColor: done ? 'green' : 'blue', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 }}
       >
         {/* Header */}
-        <Box justifyContent="center" marginBottom={1}>
-          <Text bold color={done ? 'green' : 'blue'}>
+        <box style={{ justifyContent: 'center', marginBottom: 1 }}>
+          <text style={{ fontWeight: 'bold', color: done ? 'green' : 'blue' }}>
             {done ? 'Workshop Repo Generated' : 'Generating Workshop Repo'}
-          </Text>
-        </Box>
+          </text>
+        </box>
 
         {/* Phase indicator */}
         {currentPhase && !done && (
-          <Box flexDirection="column" marginBottom={1}>
-            <Box>
-              <Text>
+          <box style={{ flexDirection: 'column', marginBottom: 1 }}>
+            <box>
+              <text>
                 {PHASE_LABELS[currentPhase]} ({phaseIndex + 1}/{phaseTotal})...
-              </Text>
+              </text>
               {streamingChars > 0 && (
-                <Text dimColor> {formatChars(streamingChars)} received</Text>
+                <text style={{ opacity: 0.6 }}> {formatChars(streamingChars)} received</text>
               )}
-            </Box>
+            </box>
             {streamingPreview && (
-              <Box>
-                <Text dimColor>  &ldquo;{streamingPreview.slice(-70).trimStart()}&hellip;&rdquo;</Text>
-              </Box>
+              <box>
+                <text style={{ opacity: 0.6 }}>  &ldquo;{streamingPreview.slice(-70).trimStart()}&hellip;&rdquo;</text>
+              </box>
             )}
-          </Box>
+          </box>
         )}
 
         {/* Files written */}
         {files.length > 0 && (
-          <Box flexDirection="column" marginBottom={1}>
-            <Text bold>Files written ({files.length}):</Text>
+          <box style={{ flexDirection: 'column', marginBottom: 1 }}>
+            <text style={{ fontWeight: 'bold' }}>Files written ({files.length}):</text>
             {files.map((file, idx) => (
-              <Box key={idx}>
-                <Text color="green">  + </Text>
-                <Text>{file.path}</Text>
+              <box key={idx}>
+                <text style={{ color: 'green' }}>  + </text>
+                <text>{file.path}</text>
                 {file.bytes > 0 && (
-                  <Text dimColor> ({formatBytes(file.bytes)})</Text>
+                  <text style={{ opacity: 0.6 }}> ({formatBytes(file.bytes)})</text>
                 )}
-              </Box>
+              </box>
             ))}
-          </Box>
+          </box>
         )}
 
         {/* Output directory */}
         {done && (
-          <Box>
-            <Text>Output: </Text>
-            <Text color="cyan">{outputDir}</Text>
-          </Box>
+          <box>
+            <text>Output: </text>
+            <text style={{ color: 'cyan' }}>{outputDir}</text>
+          </box>
         )}
-      </Box>
-    </Box>
+      </box>
+    </box>
   );
 }
 
